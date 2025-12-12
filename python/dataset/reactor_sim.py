@@ -61,24 +61,47 @@ def reactor_dynamics(t, y, reactivity_func, flow_func):
 
 # --- SCENARIO 1: SCRAM (Reactor Trip) ---
 def run_scram_simulation():
-    # Scenario: Reactor runs normal, then SCRAM at t=10s
+    # 1. Define the Scenario
     def reactivity_scram(t):
-        if t < 10: return 0.0       # Critical
-        return -0.05                # -5% delta k/k (Massive insertion)
+        if t < 10: return 0.0       # Normal Operation (Critical)
+        return -0.05                # SCRAM (-5% reactivity) after 10s
 
     def flow_normal(t): 
         return W_nominal
 
-    # Initial Conditions: Power=1.0, steady temps
-    y0 = [1.0, 1.0, 600.0, 300.0] 
+    # 2. CALCULATE EQUILIBRIUM (The Fix)
+    # We work backwards from Power = 1.0 to find the stable C, Tf, and Tc
+    P0 = 1.0
+    
+    # Neutron Equilibrium: Creation = Decay
+    # lambda * C0 = (beta / Lambda) * P0
+    C0 = (BETA / (GEN_TIME * LAMBDA)) * P0
+    
+    # Thermal Equilibrium: Power In = Heat Out
+    Q_eq = P0 * 2000e6  # 2000 MW
+    
+    # Coolant Temp Equilibrium (Heat into Coolant = Heat removed by Flow)
+    # Q_eq = 2 * W * Cp_c * (Tc - Tin)
+    # Tc = Tin + Q_eq / (2 * W * Cp_c)
+    Tc0 = Tin + Q_eq / (2 * W_nominal * Cp_c)
+    
+    # Fuel Temp Equilibrium (Heat gen in Fuel = Heat transfer to Coolant)
+    # Q_eq = UA * (Tf - Tc)
+    # Tf = Tc + Q_eq / UA
+    Tf0 = Tc0 + Q_eq / UA
+    
+    print(f"Calculated Initial Conditions: P={P0}, C={C0:.2f}, Tf={Tf0:.1f}, Tc={Tc0:.1f}")
+
+    # 3. Set y0 with calculated values
+    y0 = [P0, C0, Tf0, Tc0] 
     
     # Solve
     sol = solve_ivp(
         fun=lambda t, y: reactor_dynamics(t, y, reactivity_scram, flow_normal),
         t_span=[0, 50],
-        t_eval=np.linspace(0, 50, 500),
+        t_eval=np.linspace(0, 50, 1000),
         y0=y0,
-        method='LSODA' # Stiff solver required for kinetics
+        method='LSODA'
     )
     return sol
 
