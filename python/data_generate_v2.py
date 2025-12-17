@@ -6,12 +6,12 @@ from scipy.integrate import solve_ivp
 BETA = 0.0065
 LAMBDA = 0.08
 GEN_TIME = 0.001
-Cp_f = 300           # Fuel Specific Heat
-Cp_c = 4200          # Coolant Specific Heat
+Cp_f = 300           # Fuel Specific Heat of Uranium Dioxide UO2 used in reactors
+Cp_c = 4200          # Coolant Specific Heat of Heavy Water
 UA = 2.5e6           # Heat Transfer Coeff
-W_nominal = 8000     # Nominal Flow (kg/s)
-Tin = 260            # Inlet Temp (C)
-P_nominal = 10.0     # Nominal Pressure (MPa)
+W_nominal = 8000     # Nominal Flow (kg/s) 
+Tin = 260            # Inlet Temp (C)------ 
+P_nominal = 10.0     # Nominal Pressure (MPa)---------
 ALPHA_F = -1.5e-5    # Doppler Feedback Coeff (Stabilizes the Reactor!)
 
 # --- 2. THE STABILIZED PHYSICS ENGINE ---
@@ -36,17 +36,17 @@ def reactor_dynamics(t, y, scenario_type, fault_time):
     dP_dt = ((rho_total - BETA) / GEN_TIME) * P + LAMBDA * C
     dC_dt = (BETA / GEN_TIME) * P - LAMBDA * C
     
-    Power_Watts = P * 2000e6 
+    Power_Watts = P * 2000e6 #2000e6 is thermal power in watts
     Q_trans = UA * (Tf - Tc)
     
-    dTf_dt = (Power_Watts - Q_trans) / (40000 * Cp_f)
+    dTf_dt = (Power_Watts - Q_trans) / (40000 * Cp_f)  #40000 kg of fuel mass used in calculation
     
     if W > 0:
         Heat_Removal = 2 * W * Cp_c * (Tc - Tin)
     else:
         Heat_Removal = 0 
         
-    dTc_dt = (Q_trans - Heat_Removal) / (5000 * Cp_c)
+    dTc_dt = (Q_trans - Heat_Removal) / (5000 * Cp_c) #5000 kg of coolant mass used in calculation
     
     return [dP_dt, dC_dt, dTf_dt, dTc_dt]
 
