@@ -69,7 +69,8 @@ class NuclearReactorEnv(gym.Env):
         
         self.reward_shaping = reward_shaping
         self.dt = 0.1  # 100ms timestep
-        
+        self.max_episode_time = 100.0  # Add this line
+
         # State tracking
         self.state = None
         self.t = 0.0
@@ -99,6 +100,8 @@ class NuclearReactorEnv(gym.Env):
             Tf0 += self.np_random.uniform(-5, 5)
             Tc0 += self.np_random.uniform(-2, 2)
         
+        # Add this for variable episodes:
+        self.max_episode_time = np.random.uniform(80, 200)  # Random 80-200 seconds
         self.state = np.array([P0, C0, Tf0, Tc0], dtype=np.float32)
         self.t = 0.0
         self.prev_power = P0
@@ -226,7 +229,7 @@ class NuclearReactorEnv(gym.Env):
         
         # Episode success
         truncated = False
-        if self.t >= 100.0:
+        if self.t >= self.max_episode_time:
             truncated = True
             # Bonus for completing episode
             reward += 500.0 if self.episode_max_temp < 1200.0 else 100.0
