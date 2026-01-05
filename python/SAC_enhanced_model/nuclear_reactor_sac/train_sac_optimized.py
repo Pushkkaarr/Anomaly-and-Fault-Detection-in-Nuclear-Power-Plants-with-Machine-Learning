@@ -6,7 +6,7 @@ Key Improvements:
 2. Adaptive learning rate scheduling
 3. Curriculum learning (gradually increasing difficulty)
 4. Comprehensive monitoring and checkpointing
-5. Early stopping on convergence
+5. Early stopping on convergence (FIXED: uses reward per step)
 """
 
 import os
@@ -47,11 +47,12 @@ class SAC_Trainer:
         # Training history
         self.episode_rewards = []
         self.episode_lengths = []
+        self.episode_rewards_per_step = []  # NEW: Track reward per step
         self.success_rate_history = []
         self.training_metrics = []
         
-        # Best model tracking
-        self.best_reward = -np.inf
+        # Best model tracking (based on reward per step)
+        self.best_reward_per_step = -np.inf
         self.best_episode = 0
         
     def warmup_phase(self, num_steps=5000):
@@ -87,21 +88,29 @@ class SAC_Trainer:
                 self.episode_rewards.append(episode_reward)
                 self.episode_lengths.append(episode_length)
                 
+                # Track reward per step
+                reward_per_step = episode_reward / episode_length if episode_length > 0 else 0
+                self.episode_rewards_per_step.append(reward_per_step)
+                
                 obs, _ = self.env.reset()
                 episode_reward = 0
                 episode_length = 0
             else:
                 obs = next_obs
         
+        avg_reward_total = np.mean(self.episode_rewards[-episodes_completed:])
+        avg_reward_per_step = np.mean(self.episode_rewards_per_step[-episodes_completed:])
+        
         print(f"✓ Warmup complete: {episodes_completed} episodes, buffer size: {len(self.replay_buffer)}")
-        print(f"  Avg reward during warmup: {np.mean(self.episode_rewards[-episodes_completed:]):.2f}")
+        print(f"  Avg total reward: {avg_reward_total:.2f}")
+        print(f"  Avg reward per step: {avg_reward_per_step:.2f}")
     
     def train(self, 
               total_timesteps=500000,
               batch_size=256,
               eval_frequency=5000,
               save_frequency=10000,
-              early_stop_reward=400):
+              target_reward_per_step=36.0):
         """
         Main training loop with monitoring and checkpointing
         
@@ -110,7 +119,7 @@ class SAC_Trainer:
             batch_size: Batch size for network updates
             eval_frequency: How often to evaluate performance
             save_frequency: How often to save checkpoints
-            early_stop_reward: Stop if avg reward exceeds this
+            target_reward_per_step: Stop if reward per step exceeds this (36 = better than baseline 33)
         """
         
         print(f"\n{'='*60}")
@@ -119,6 +128,7 @@ class SAC_Trainer:
         print(f"Total timesteps: {total_timesteps:,}")
         print(f"Batch size: {batch_size}")
         print(f"Device: {self.agent.device}")
+        print(f"Target reward/step: {target_reward_per_step:.1f} (baseline ~33)")
         print(f"{'='*60}\n")
         
         obs, _ = self.env.reset()
@@ -157,11 +167,18 @@ class SAC_Trainer:
                 self.episode_rewards.append(episode_reward)
                 self.episode_lengths.append(episode_length)
                 
+                # Track reward per step
+                reward_per_step = episode_reward / episode_length if episode_length > 0 else 0
+                self.episode_rewards_per_step.append(reward_per_step)
+                
                 # Log episode info
                 if episode_num % 10 == 0:
                     avg_reward = np.mean(self.episode_rewards[-10:])
-                    tqdm.write(f"Episode {episode_num} | Reward: {episode_reward:.1f} | "
-                              f"Length: {episode_length} | Avg(10): {avg_reward:.1f} | "
+                    avg_reward_per_step = np.mean(self.episode_rewards_per_step[-10:])
+                    avg_length = np.mean(self.episode_lengths[-10:])
+                    tqdm.write(f"Episode {episode_num} | Total: {episode_reward:.0f} | "
+                              f"Per-step: {reward_per_step:.2f} | "
+                              f"Length: {episode_length} | Avg10: {avg_reward_per_step:.2f} | "
                               f"Alpha: {self.agent.alpha:.3f}")
                 
                 # Reset environment
@@ -173,23 +190,25 @@ class SAC_Trainer:
             
             # Evaluation
             if step % eval_frequency == 0 and step > 0:
-                eval_reward = self.evaluate(num_episodes=5)
+                eval_reward_per_step, eval_total_reward, eval_avg_steps = self.evaluate(num_episodes=5)
                 tqdm.write(f"\n{'='*60}")
                 tqdm.write(f"EVALUATION @ Step {step:,}")
-                tqdm.write(f"Average Reward: {eval_reward:.2f}")
+                tqdm.write(f"Reward per step: {eval_reward_per_step:.2f}")
+                tqdm.write(f"Avg total reward: {eval_total_reward:.0f}")
+                tqdm.write(f"Avg episode length: {eval_avg_steps:.0f} steps")
                 tqdm.write(f"{'='*60}\n")
                 
-                # Save best model
-                if eval_reward > self.best_reward:
-                    self.best_reward = eval_reward
+                # Save best model based on reward per step
+                if eval_reward_per_step > self.best_reward_per_step:
+                    self.best_reward_per_step = eval_reward_per_step
                     self.best_episode = episode_num
                     self.agent.save(f"{self.save_dir}/best_model.pth")
-                    tqdm.write(f"★ New best model saved! Reward: {eval_reward:.2f}")
+                    tqdm.write(f"★ New best model saved! Reward/step: {eval_reward_per_step:.2f}")
                 
-                # Early stopping
-                if eval_reward > early_stop_reward:
-                    tqdm.write(f"\n🎉 TRAINING COMPLETE - Target reward achieved!")
-                    tqdm.write(f"Final reward: {eval_reward:.2f} > {early_stop_reward}")
+                # Early stopping based on reward per step
+                if eval_reward_per_step > target_reward_per_step:
+                    tqdm.write(f"\n🎉 TRAINING COMPLETE - Target performance achieved!")
+                    tqdm.write(f"Final reward per step: {eval_reward_per_step:.2f} > {target_reward_per_step:.2f}")
                     break
             
             # Periodic checkpoint
@@ -205,7 +224,7 @@ class SAC_Trainer:
         print(f"\n{'='*60}")
         print("TRAINING FINISHED")
         print(f"{'='*60}")
-        print(f"Best reward: {self.best_reward:.2f} (Episode {self.best_episode})")
+        print(f"Best reward per step: {self.best_reward_per_step:.2f} (Episode {self.best_episode})")
         print(f"Total episodes: {episode_num}")
         print(f"Models saved to: {self.save_dir}")
         print(f"{'='*60}\n")
@@ -214,13 +233,15 @@ class SAC_Trainer:
         """
         Evaluate agent performance (deterministic policy)
         
-        Returns: Average episode reward
+        Returns: (reward_per_step, avg_total_reward, avg_steps)
         """
         eval_rewards = []
+        eval_steps = []
         
         for ep in range(num_episodes):
             obs, _ = self.env.reset()
             episode_reward = 0
+            episode_steps = 0
             done = False
             
             while not done:
@@ -228,35 +249,44 @@ class SAC_Trainer:
                 action = self.agent.select_action(obs, deterministic=True)
                 obs, reward, terminated, truncated, info = self.env.step(action)
                 episode_reward += reward
+                episode_steps += 1
                 done = terminated or truncated
             
             eval_rewards.append(episode_reward)
+            eval_steps.append(episode_steps)
         
-        return np.mean(eval_rewards)
+        avg_reward = np.mean(eval_rewards)
+        avg_steps = np.mean(eval_steps)
+        reward_per_step = avg_reward / avg_steps if avg_steps > 0 else 0
+        
+        return reward_per_step, avg_reward, avg_steps
     
     def save_training_curves(self):
         """Generate and save training performance plots"""
         
         fig, axes = plt.subplots(2, 2, figsize=(15, 10))
         
-        # Plot 1: Episode Rewards
-        axes[0, 0].plot(self.episode_rewards, alpha=0.3, color='blue')
-        if len(self.episode_rewards) > 50:
-            # Moving average
-            window = 50
-            moving_avg = np.convolve(self.episode_rewards, 
-                                    np.ones(window)/window, 
-                                    mode='valid')
-            axes[0, 0].plot(range(window-1, len(self.episode_rewards)), 
-                          moving_avg, 
-                          color='red', 
-                          linewidth=2, 
-                          label=f'{window}-episode MA')
-        axes[0, 0].set_xlabel('Episode')
-        axes[0, 0].set_ylabel('Reward')
-        axes[0, 0].set_title('Episode Rewards')
-        axes[0, 0].legend()
-        axes[0, 0].grid(True, alpha=0.3)
+        # Plot 1: Episode Rewards Per Step (NEW - Most Important Metric)
+        if len(self.episode_rewards_per_step) > 0:
+            axes[0, 0].plot(self.episode_rewards_per_step, alpha=0.3, color='blue')
+            if len(self.episode_rewards_per_step) > 50:
+                # Moving average
+                window = 50
+                moving_avg = np.convolve(self.episode_rewards_per_step, 
+                                        np.ones(window)/window, 
+                                        mode='valid')
+                axes[0, 0].plot(range(window-1, len(self.episode_rewards_per_step)), 
+                              moving_avg, 
+                              color='red', 
+                              linewidth=2, 
+                              label=f'{window}-episode MA')
+            axes[0, 0].axhline(y=33, color='green', linestyle='--', alpha=0.5, label='Baseline (33)')
+            axes[0, 0].axhline(y=36, color='orange', linestyle='--', alpha=0.5, label='Target (36)')
+            axes[0, 0].set_xlabel('Episode')
+            axes[0, 0].set_ylabel('Reward per Step')
+            axes[0, 0].set_title('Episode Rewards per Step (KEY METRIC)')
+            axes[0, 0].legend()
+            axes[0, 0].grid(True, alpha=0.3)
         
         # Plot 2: Episode Lengths
         axes[0, 1].plot(self.episode_lengths, color='green', alpha=0.5)
@@ -291,9 +321,10 @@ class SAC_Trainer:
         summary = {
             'training_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'total_episodes': len(self.episode_rewards),
-            'best_reward': float(self.best_reward),
+            'best_reward_per_step': float(self.best_reward_per_step),
             'best_episode': int(self.best_episode),
-            'final_avg_reward': float(np.mean(self.episode_rewards[-100:])) if len(self.episode_rewards) >= 100 else float(np.mean(self.episode_rewards)),
+            'final_avg_reward_per_step': float(np.mean(self.episode_rewards_per_step[-100:])) if len(self.episode_rewards_per_step) >= 100 else float(np.mean(self.episode_rewards_per_step)),
+            'final_avg_total_reward': float(np.mean(self.episode_rewards[-100:])) if len(self.episode_rewards) >= 100 else float(np.mean(self.episode_rewards)),
             'buffer_statistics': self.replay_buffer.get_statistics(),
             'hyperparameters': {
                 'gamma': self.agent.gamma,
@@ -360,17 +391,19 @@ def main():
     
     # Train
     trainer.train(
-        total_timesteps=500000,
+        total_timesteps=50000,
         batch_size=256,
         eval_frequency=5000,
         save_frequency=25000,
-        early_stop_reward=800  # Target reward for early stopping
+        target_reward_per_step=36.0  # FIXED: Target 36 reward/step (better than baseline 33)
     )
     
     # Final evaluation
     print("\nFinal Evaluation (10 episodes):")
-    final_reward = trainer.evaluate(num_episodes=10)
-    print(f"Average reward: {final_reward:.2f}")
+    reward_per_step, total_reward, avg_steps = trainer.evaluate(num_episodes=10)
+    print(f"Reward per step: {reward_per_step:.2f}")
+    print(f"Average total reward: {total_reward:.0f}")
+    print(f"Average episode length: {avg_steps:.0f} steps")
 
 
 if __name__ == "__main__":

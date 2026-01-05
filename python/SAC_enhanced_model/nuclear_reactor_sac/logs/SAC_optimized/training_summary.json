@@ -1,0 +1,23 @@
+{
+    "training_date": "2026-01-05 18:46:56",
+    "total_episodes": 48,
+    "best_reward_per_step": 35.344626952802116,
+    "best_episode": 28,
+    "final_avg_reward_per_step": 24.186704635620117,
+    "final_avg_total_reward": 28573.654296875,
+    "buffer_statistics": {
+        "size": 60000,
+        "avg_reward": 23.290449142456055,
+        "std_reward": 17.18244171142578,
+        "min_reward": -14.427970886230469,
+        "max_reward": 534.9706420898438,
+        "high_priority_fraction": 0.0
+    },
+    "hyperparameters": {
+        "gamma": 0.99,
+        "tau": 0.005,
+        "initial_alpha": 0.2,
+        "final_alpha": 0.4147840738296509,
+        "auto_entropy_tuning": true
+    }
+}
