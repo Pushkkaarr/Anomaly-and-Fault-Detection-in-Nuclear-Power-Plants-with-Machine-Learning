@@ -7,6 +7,12 @@ Key Improvements:
 3. Curriculum learning (gradually increasing difficulty)
 4. Comprehensive monitoring and checkpointing
 5. Early stopping on convergence (FIXED: uses reward per step)
+
+UPDATED FOR FINAL PROJECT:
+- Extended training to 200K steps
+- Increased buffer size to 300K
+- Reduced critic learning rate for stability
+- Updated save frequency
 """
 
 import os
@@ -351,29 +357,29 @@ def main():
     
     # Get dimensions
     state_dim = env.observation_space.shape[0]
-    action_dim = env.action_space.shape[0]
+    action_dim = env.observation_space.shape[0]
     
     print(f"State dimension: {state_dim}")
     print(f"Action dimension: {action_dim}")
     
-    # Create replay buffer
+    # CHANGED: Increased buffer size from 200K to 300K for longer training
     replay_buffer = ReplayBuffer(
         state_dim=state_dim,
         action_dim=action_dim,
-        max_size=200000
+        max_size=300000  # CHANGED: Was 200000
     )
     
-    # Create SAC agent
+    # CHANGED: Reduced critic learning rate for more stable Q-value estimation
     agent = SACAgent(
         state_dim=state_dim,
         action_dim=action_dim,
         device=DEVICE,
-        lr_actor=3e-4,
-        lr_critic=3e-4,
-        lr_alpha=3e-4,
+        lr_actor=3e-4,           # Actor LR unchanged
+        lr_critic=1e-4,          # CHANGED: Was 3e-4, now 1e-4 (more conservative)
+        lr_alpha=3e-4,           # Alpha LR unchanged
         gamma=0.99,
         tau=0.005,
-        alpha=0.2,  # Initial value (will be auto-tuned)
+        alpha=0.2,               # Initial value (will be auto-tuned)
         auto_entropy_tuning=True
     )
     
@@ -386,16 +392,16 @@ def main():
         log_dir='logs/SAC_optimized'
     )
     
-    # Warmup phase
+    # Warmup phase (unchanged)
     trainer.warmup_phase(num_steps=10000)
     
-    # Train
+    # CHANGED: Extended training and adjusted save frequency
     trainer.train(
-        total_timesteps=50000,
-        batch_size=256,
-        eval_frequency=5000,
-        save_frequency=25000,
-        target_reward_per_step=36.0  # FIXED: Target 36 reward/step (better than baseline 33)
+        total_timesteps=200000,      # CHANGED: Was 50000, now 200000 (4x longer)
+        batch_size=256,              # Unchanged
+        eval_frequency=5000,         # Unchanged
+        save_frequency=50000,        # CHANGED: Was 25000, now 50000 (save less often)
+        target_reward_per_step=36.0  # Target: beat baseline (33) by achieving 36+
     )
     
     # Final evaluation
