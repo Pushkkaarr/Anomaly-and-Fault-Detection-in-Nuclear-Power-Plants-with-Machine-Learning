@@ -249,28 +249,41 @@ class NuclearReactorEnv(gym.Env):
         5. Safe operation bonus (baseline reward)
         """
         
-        reward = 0.0
+     
         
         # ====================================================================
         # 1. POWER TRACKING (Primary Objective)
         # ====================================================================
+        # --- REWARD FUNCTION V2: Precision-Focused ---
+        reward = 0.0
         power_error = abs(P - 1.0)
-        
-        if self.reward_shaping == 'advanced':
-            # Exponential penalty - small errors are okay, large errors are catastrophic
-            if power_error < 0.01:
-                reward += 20.0  # Perfect control
-            elif power_error < 0.02:
-                reward += 15.0
-            elif power_error < 0.05:
-                reward += 10.0
-            elif power_error < 0.10:
-                reward += 5.0
-            else:
-                reward -= 50.0 * (power_error ** 2)  # Exponential penalty
-        else:
-            # Original linear penalty
-            reward -= 10.0 * power_error
+
+        # 1. Base error penalty (steeper than before)
+        reward -= 100.0 * power_error
+
+        # 2. Precision bonuses (tighter thresholds)
+        if power_error < 0.01:      # ±1%
+            reward += 50.0
+        elif power_error < 0.02:    # ±2%
+            reward += 20.0
+        elif power_error < 0.05:    # ±5%
+            reward += 5.0
+
+        # 3. Safety penalty (same as before)
+        if Tf > 1200.0:
+            reward -= 50.0
+
+        # 4. Rod actuation incentive (NEW - prevents lazy control)
+        rod_action_magnitude = abs(action[0])
+        if rod_action_magnitude < 0.01:  # If rods barely moved
+            reward -= 5.0  # Small penalty for inaction
+            
+        # 5. Encourage meaningful rod use (NEW)
+        if 0.05 < rod_action_magnitude < 0.5:
+            reward += 2.0  # Bonus for active (but not violent) control
+
+        # 6. Small survival bonus (to prevent giving up)
+        reward += 0.5
         
         # ====================================================================
         # 2. TEMPERATURE SAFETY (Critical Constraint)
