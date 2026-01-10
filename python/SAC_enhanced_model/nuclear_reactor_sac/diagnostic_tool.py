@@ -346,17 +346,17 @@ class SACDiagnostics:
 def main():
     """Main diagnostic script"""
     
-    # import sys
+    import sys
     
-    # if len(sys.argv) > 1:
-    #     model_path = sys.argv[1]
-    #     print(f"Running diagnostics on trained model: {model_path}")
-    # else:
-    #     model_path = None
-    #     print("Running diagnostics on untrained model")
+    if len(sys.argv) > 1:
+        model_path = sys.argv[1]
+        print(f"Running diagnostics on trained model: {model_path}")
+    else:
+        model_path = None
+        print("Running diagnostics on untrained model")
 
-    model_path = "models/SAC_optimized/final_model.pth"
-    print(f"Running diagnostics on trained model: {model_path}")
+    # model_path = "models/SAC_optimized/final_model.pth"
+    # print(f"Running diagnostics on trained model: {model_path}")
     diagnostics = SACDiagnostics(model_path)
     diagnostics.run_full_diagnostics()
 

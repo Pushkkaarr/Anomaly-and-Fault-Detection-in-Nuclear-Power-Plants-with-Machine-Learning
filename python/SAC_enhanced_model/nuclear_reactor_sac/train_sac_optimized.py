@@ -357,7 +357,7 @@ def main():
     
     # Get dimensions
     state_dim = env.observation_space.shape[0]
-    action_dim = env.observation_space.shape[0]
+    action_dim = env.action_space.shape[0]
     
     print(f"State dimension: {state_dim}")
     print(f"Action dimension: {action_dim}")
