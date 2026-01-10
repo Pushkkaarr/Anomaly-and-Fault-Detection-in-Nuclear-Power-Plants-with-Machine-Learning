@@ -239,98 +239,57 @@ class NuclearReactorEnv(gym.Env):
     
     def _calculate_reward(self, P, Tf, Tc, P_rate, T_rate, action):
         """
-        Advanced reward function designed to guide SAC to high performance
+        REWARD FUNCTION V2: Precision-Focused with Rod Actuation Incentive
         
-        Reward Components:
-        1. Power setpoint tracking (exponential penalty)
-        2. Temperature safety margin (exponential danger zone)
-        3. Stability bonus (penalize oscillations)
-        4. Control effort penalty (smooth control preferred)
-        5. Safe operation bonus (baseline reward)
+        Design Philosophy:
+        - Harsh penalty for power error (forces tight control)
+        - Precision bonuses for hitting narrow tolerance bands
+        - Rod inaction penalty (prevents "lazy" coolant-only control)
+        - Safety penalties for temperature violations
         """
         
-     
+        reward = 0.0
+        power_error = abs(P - 1.0)
         
         # ====================================================================
         # 1. POWER TRACKING (Primary Objective)
         # ====================================================================
-        # --- REWARD FUNCTION V2: Precision-Focused ---
-        reward = 0.0
-        power_error = abs(P - 1.0)
-
-        # 1. Base error penalty (steeper than before)
+        # Base error penalty (10x steeper than before: -100 vs -10)
         reward -= 100.0 * power_error
-
-        # 2. Precision bonuses (tighter thresholds)
-        if power_error < 0.01:      # ±1%
+        
+        # Precision bonuses (tighter thresholds)
+        if power_error < 0.01:      # ±1% - Excellent
             reward += 50.0
-        elif power_error < 0.02:    # ±2%
+        elif power_error < 0.02:    # ±2% - Good
             reward += 20.0
-        elif power_error < 0.05:    # ±5%
+        elif power_error < 0.05:    # ±5% - Acceptable
             reward += 5.0
-
-        # 3. Safety penalty (same as before)
-        if Tf > 1200.0:
-            reward -= 50.0
-
-        # 4. Rod actuation incentive (NEW - prevents lazy control)
-        rod_action_magnitude = abs(action[0])
-        if rod_action_magnitude < 0.01:  # If rods barely moved
-            reward -= 5.0  # Small penalty for inaction
-            
-        # 5. Encourage meaningful rod use (NEW)
-        if 0.05 < rod_action_magnitude < 0.5:
-            reward += 2.0  # Bonus for active (but not violent) control
-
-        # 6. Small survival bonus (to prevent giving up)
-        reward += 0.5
         
         # ====================================================================
         # 2. TEMPERATURE SAFETY (Critical Constraint)
         # ====================================================================
-        temp_margin = 1200.0 - Tf
-        
         if Tf > 1200.0:
             # Exponentially increasing danger
             overheat = Tf - 1200.0
             reward -= 100.0 * (overheat / 100.0) ** 2
             self.cumulative_violation_time += self.dt
-        elif temp_margin < 50.0:
-            # Approaching danger zone
-            reward -= 10.0 * (1.0 - temp_margin / 50.0)
-        else:
-            # Safe operation bonus
-            reward += 5.0
         
         # ====================================================================
-        # 3. STABILITY BONUS (Penalize Oscillations)
+        # 3. ROD ACTUATION INCENTIVE (NEW - Prevents Lazy Control)
         # ====================================================================
-        # Reward smooth control - penalize rapid changes
-        power_stability = abs(P_rate)
-        temp_stability = abs(T_rate)
+        rod_action_magnitude = abs(action[0])
         
-        if power_stability < 0.01 and temp_stability < 1.0:
-            reward += 8.0  # Very stable
-        elif power_stability < 0.05 and temp_stability < 5.0:
-            reward += 3.0  # Moderately stable
-        else:
-            reward -= 2.0 * (power_stability + temp_stability / 10.0)
+        if rod_action_magnitude < 0.01:
+            # Penalty for NOT using rods at all
+            reward -= 5.0
+        elif 0.05 < rod_action_magnitude < 0.5:
+            # Bonus for meaningful but not violent control
+            reward += 2.0
         
         # ====================================================================
-        # 4. CONTROL EFFORT PENALTY (Smooth Control)
+        # 4. SURVIVAL BONUS (Small baseline reward)
         # ====================================================================
-        # Penalize aggressive control actions
-        control_magnitude = np.linalg.norm(action)
-        reward -= 0.5 * control_magnitude
-        
-        # Extra penalty for simultaneous large actions
-        if abs(action[0]) > 0.7 and abs(action[1]) > 0.7:
-            reward -= 5.0  # Discourage panic moves
-        
-        # ====================================================================
-        # 5. BASELINE SURVIVAL BONUS
-        # ====================================================================
-        reward += 2.0  # Base reward for staying alive
+        reward += 0.5
         
         return reward
     
