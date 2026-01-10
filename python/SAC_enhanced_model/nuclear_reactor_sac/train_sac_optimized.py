@@ -401,7 +401,7 @@ def main():
         batch_size=256,              # Unchanged
         eval_frequency=5000,         # Unchanged
         save_frequency=50000,        # CHANGED: Was 25000, now 50000 (save less often)
-        target_reward_per_step=36.0  # Target: beat baseline (33) by achieving 36+
+        target_reward_per_step=60.0  # Target: beat baseline (33) by achieving 36+
     )
     
     # Final evaluation
