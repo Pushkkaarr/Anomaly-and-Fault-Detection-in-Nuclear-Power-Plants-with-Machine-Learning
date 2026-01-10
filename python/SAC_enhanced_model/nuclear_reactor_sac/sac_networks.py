@@ -18,7 +18,7 @@ class QNetwork(nn.Module):
     Input: [state, action] → Output: Q-value
     """
     
-    def __init__(self, state_dim, action_dim, hidden_dims=[256, 256, 128]):
+    def __init__(self, state_dim, action_dim, hidden_dims=[512, 512, 256, 128]):
         super(QNetwork, self).__init__()
         
         # Build layers
