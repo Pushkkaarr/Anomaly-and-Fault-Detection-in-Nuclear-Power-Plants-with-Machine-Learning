@@ -101,7 +101,7 @@ class NuclearReactorEnv(gym.Env):
             Tc0 += self.np_random.uniform(-2, 2)
         
         # Add this for variable episodes:
-        self.max_episode_time = np.random.uniform(80, 200)  # Random 80-200 seconds
+        self.max_episode_time = self.np_random.uniform(100, 150) if self.np_random is not None else 100.0
         self.state = np.array([P0, C0, Tf0, Tc0], dtype=np.float32)
         self.t = 0.0
         self.prev_power = P0
@@ -143,8 +143,9 @@ class NuclearReactorEnv(gym.Env):
             
             # FORMULA 4: Reactivity calculation
             rho_doppler = CONSTANTS['ALPHA_F'] * (Tf_loc - CONSTANTS['Tf0'])
-            # Scale control action: action[0] ∈ [-1,1] → reactivity change
-            rho_control = action[0] * 0.002  # Max ±0.002 $/step for stability
+            # Scale control action with physical limits
+            # Real PHWR: ~0.001$/s max rod speed
+            rho_control = action[0] * 0.001  # Reduced for realism
             rho_total = rho_doppler + rho_control
             
             # FORMULA 1: Neutron kinetics (point kinetics with one delayed group)
@@ -159,10 +160,12 @@ class NuclearReactorEnv(gym.Env):
             dTf_dt = (Power_Watts - Q_trans) / (CONSTANTS['M_fuel'] * CONSTANTS['Cp_f'])
             
             # FORMULA 3: Coolant temperature dynamics
-            # Scale flow action: action[1] ∈ [-1,1] → flow change
-            flow_multiplier = 1.0 + (action[1] * 0.3)  # ±30% flow change max
+            # Scale flow action with realistic pump response
+            # Real pumps can't change flow instantly - add inertia
+            flow_multiplier = 1.0 + (action[1] * 0.25)  # ±25% max (more realistic)
             current_flow = CONSTANTS['W_nominal'] * flow_multiplier
-            current_flow = np.clip(current_flow, 1000.0, 12000.0)
+            # Physical limits: minimum 20%, maximum 150% of nominal
+            current_flow = np.clip(current_flow, 0.2 * CONSTANTS['W_nominal'], 1.5 * CONSTANTS['W_nominal'])
             
             Heat_Removal = 2 * current_flow * CONSTANTS['Cp_c'] * (Tc_loc - CONSTANTS['Tin'])
             dTc_dt = (Q_trans - Heat_Removal) / (CONSTANTS['M_coolant'] * CONSTANTS['Cp_c'])
@@ -239,58 +242,144 @@ class NuclearReactorEnv(gym.Env):
     
     def _calculate_reward(self, P, Tf, Tc, P_rate, T_rate, action):
         """
-        REWARD FUNCTION V2: Precision-Focused with Rod Actuation Incentive
+        Nuclear Engineering-Grade Reward Function
         
-        Design Philosophy:
-        - Harsh penalty for power error (forces tight control)
-        - Precision bonuses for hitting narrow tolerance bands
-        - Rod inaction penalty (prevents "lazy" coolant-only control)
-        - Safety penalties for temperature violations
+        Principles:
+        1. Power control via REACTIVITY (rods) - primary
+        2. Heat removal via FLOW (coolant) - secondary
+        3. Penalize using wrong tool for the job
+        4. Reward coordinated control strategies
         """
         
         reward = 0.0
         power_error = abs(P - 1.0)
+        rod_action = action[0]
+        flow_action = action[1]
         
-        # ====================================================================
-        # 1. POWER TRACKING (Primary Objective)
-        # ====================================================================
-        # Base error penalty (10x steeper than before: -100 vs -10)
-        reward -= 100.0 * power_error
+        # =================================================================
+        # 1. PRIMARY OBJECTIVE: Power Setpoint Tracking
+        # =================================================================
+        # Exponential penalty - tighter control gets exponentially better rewards
+        power_penalty = -50.0 * (power_error ** 2)
+        reward += power_penalty
         
-        # Precision bonuses (tighter thresholds)
-        if power_error < 0.01:      # ±1% - Excellent
-            reward += 50.0
-        elif power_error < 0.02:    # ±2% - Good
-            reward += 20.0
-        elif power_error < 0.05:    # ±5% - Acceptable
-            reward += 5.0
+        # Precision tiers (non-stacking)
+        if power_error < 0.005:  # ±0.5% - Exceptional
+            reward += 40.0
+        elif power_error < 0.01:  # ±1% - Excellent
+            reward += 25.0
+        elif power_error < 0.02:  # ±2% - Good
+            reward += 10.0
+        elif power_error < 0.05:  # ±5% - Acceptable
+            reward += 3.0
         
-        # ====================================================================
-        # 2. TEMPERATURE SAFETY (Critical Constraint)
-        # ====================================================================
+        # =================================================================
+        # 2. TEMPERATURE SAFETY - Critical Constraint
+        # =================================================================
+        temp_margin = 1200.0 - Tf
+        
         if Tf > 1200.0:
-            # Exponentially increasing danger
+            # Exponential danger penalty
             overheat = Tf - 1200.0
-            reward -= 100.0 * (overheat / 100.0) ** 2
+            reward -= 200.0 * (overheat / 100.0) ** 2
             self.cumulative_violation_time += self.dt
+        elif temp_margin < 100.0:
+            # Approaching danger - warning penalty
+            reward -= 5.0 * (1.0 - temp_margin / 100.0)
         
-        # ====================================================================
-        # 3. ROD ACTUATION INCENTIVE (NEW - Prevents Lazy Control)
-        # ====================================================================
-        rod_action_magnitude = abs(action[0])
+        # =================================================================
+        # 3. CONTROL STRATEGY ASSESSMENT - The Nuclear Engineering Part
+        # =================================================================
         
-        if rod_action_magnitude < 0.01:
-            # Penalty for NOT using rods at all
-            reward -= 5.0
-        elif 0.05 < rod_action_magnitude < 0.5:
-            # Bonus for meaningful but not violent control
-            reward += 2.0
+        # A. REACTIVITY CONTROL (Rods) Assessment
+        # Rods should be used for POWER changes, not temperature
+        rod_magnitude = abs(rod_action)
+        power_rate_magnitude = abs(P_rate)
         
-        # ====================================================================
-        # 4. SURVIVAL BONUS (Small baseline reward)
-        # ====================================================================
-        reward += 0.5
+        # Good: Using rods when power is changing
+        if power_rate_magnitude > 0.02:  # Power is drifting
+            if rod_magnitude > 0.05:  # Agent is using rods (correct!)
+                reward += 5.0  # Reward proper reactivity control
+            else:  # Power drifting but not using rods (wrong!)
+                reward -= 3.0  # Penalty for not addressing reactivity
         
+        # Penalize excessive rod movement when power is stable
+        if power_error < 0.02 and rod_magnitude > 0.3:
+            reward -= 8.0  # Don't thrash rods when power is fine
+        
+        # B. THERMAL MANAGEMENT (Flow) Assessment
+        # Flow should be used for TEMPERATURE control
+        flow_magnitude = abs(flow_action)
+        temp_rate_magnitude = abs(T_rate)
+        
+        # Good: Using flow when temperature is changing
+        if temp_rate_magnitude > 2.0:  # Temperature is drifting
+            if flow_magnitude > 0.1:  # Agent is adjusting flow (correct!)
+                reward += 5.0  # Reward proper thermal management
+            else:  # Temperature drifting but not adjusting flow (wrong!)
+                reward -= 3.0
+        
+        # Penalize excessive flow changes when temperature is stable
+        if abs(Tf - 1095.0) < 10.0 and flow_magnitude > 0.5:
+            reward -= 8.0  # Don't slam pumps when temp is fine
+        
+        # C. COORDINATION BONUS - Realistic Multi-Variable Control
+        # Real operators coordinate rod and flow movements
+        
+        # Scenario 1: Power rising, temperature rising
+        # Correct response: Insert rods (negative) AND increase flow (positive)
+        if P > 1.05 and Tf > 1100.0:
+            if rod_action < -0.05 and flow_action > 0.1:
+                reward += 10.0  # Excellent coordinated response!
+        
+        # Scenario 2: Power dropping, temperature dropping  
+        # Correct response: Withdraw rods (positive) AND decrease flow (negative)
+        if P < 0.95 and Tf < 1090.0:
+            if rod_action > 0.05 and flow_action < -0.1:
+                reward += 10.0  # Excellent coordinated response!
+        
+        # =================================================================
+        # 4. CONTROL QUALITY - Smooth Professional Operation
+        # =================================================================
+        
+        # Penalize EXTREME actions (slamming controls)
+        if abs(rod_action) > 0.8:
+            reward -= 10.0 * (abs(rod_action) - 0.8)  # Emergency use only
+        
+        if abs(flow_action) > 0.9:
+            reward -= 15.0 * (abs(flow_action) - 0.9)  # Very dangerous
+        
+        # Reward BALANCED control (both controls used appropriately)
+        if 0.05 < rod_magnitude < 0.3 and 0.1 < flow_magnitude < 0.5:
+            reward += 3.0  # Using both controls in reasonable ranges
+        
+        # =================================================================
+        # 5. STABILITY METRICS - Professional Operation
+        # =================================================================
+        
+        # Penalize oscillations
+        if power_rate_magnitude > 0.05:
+            reward -= 3.0 * power_rate_magnitude
+        
+        if temp_rate_magnitude > 10.0:
+            reward -= 2.0 * (temp_rate_magnitude / 10.0)
+        
+        # Bonus for achieving steady-state
+        if power_rate_magnitude < 0.01 and temp_rate_magnitude < 1.0:
+            reward += 5.0  # Steady state bonus
+        
+        # =================================================================
+        # 6. BASELINE SURVIVAL
+        # =================================================================
+        reward += 1.0  # Small bonus for staying alive
+
+        # =================================================================
+        # 7. REWARD NORMALIZATION (CRITICAL for gradient stability)
+        # =================================================================
+        # Scale down rewards to prevent gradient explosion
+        # Typical range is now -50 to +60, we'll normalize to -10 to +12
+        reward = reward * 0.2  # Scale factor
+
         return reward
     
     def render(self):
