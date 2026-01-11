@@ -182,10 +182,18 @@ class SAC_Trainer:
                     avg_reward = np.mean(self.episode_rewards[-10:])
                     avg_reward_per_step = np.mean(self.episode_rewards_per_step[-10:])
                     avg_length = np.mean(self.episode_lengths[-10:])
+                    
+                    # Get latest metrics if available
+                    grad_info = ""
+                    if len(self.training_metrics) > 0:
+                        latest = self.training_metrics[-1]
+                        if 'actor_grad_norm' in latest:
+                            grad_info = f" | Grads(A/C): {latest['actor_grad_norm']:.1f}/{latest['critic_grad_norm']:.1f}"
+                    
                     tqdm.write(f"Episode {episode_num} | Total: {episode_reward:.0f} | "
                               f"Per-step: {reward_per_step:.2f} | "
                               f"Length: {episode_length} | Avg10: {avg_reward_per_step:.2f} | "
-                              f"Alpha: {self.agent.alpha:.3f}")
+                              f"Alpha: {self.agent.alpha:.3f}{grad_info}")
                 
                 # Reset environment
                 obs, _ = self.env.reset()
@@ -203,6 +211,15 @@ class SAC_Trainer:
                 tqdm.write(f"Avg total reward: {eval_total_reward:.0f}")
                 tqdm.write(f"Avg episode length: {eval_avg_steps:.0f} steps")
                 tqdm.write(f"{'='*60}\n")
+                
+                # Show control usage
+                if hasattr(self, 'last_eval_rod_usage'):
+                    tqdm.write(f"Control Usage - Rod: {self.last_eval_rod_usage:.3f}, Flow: {self.last_eval_flow_usage:.3f}")
+                
+                # Log critic performance metrics
+                if len(self.agent.critic_losses) > 0:
+                    recent_critic_loss = np.mean(self.agent.critic_losses[-100:])
+                    tqdm.write(f"Critic loss (last 100): {recent_critic_loss:.3f}")
                 
                 # Save best model based on reward per step
                 if eval_reward_per_step > self.best_reward_per_step:
@@ -237,22 +254,28 @@ class SAC_Trainer:
     
     def evaluate(self, num_episodes=5, render=False):
         """
-        Evaluate agent performance (deterministic policy)
+        Evaluate agent performance with control usage statistics
         
         Returns: (reward_per_step, avg_total_reward, avg_steps)
         """
         eval_rewards = []
         eval_steps = []
+        rod_usage = []
+        flow_usage = []
         
         for ep in range(num_episodes):
             obs, _ = self.env.reset()
             episode_reward = 0
             episode_steps = 0
+            episode_rod_actions = []
+            episode_flow_actions = []
             done = False
             
             while not done:
-                # Deterministic action selection
                 action = self.agent.select_action(obs, deterministic=True)
+                episode_rod_actions.append(abs(action[0]))
+                episode_flow_actions.append(abs(action[1]))
+                
                 obs, reward, terminated, truncated, info = self.env.step(action)
                 episode_reward += reward
                 episode_steps += 1
@@ -260,10 +283,16 @@ class SAC_Trainer:
             
             eval_rewards.append(episode_reward)
             eval_steps.append(episode_steps)
+            rod_usage.append(np.mean(episode_rod_actions))
+            flow_usage.append(np.mean(episode_flow_actions))
         
         avg_reward = np.mean(eval_rewards)
         avg_steps = np.mean(eval_steps)
         reward_per_step = avg_reward / avg_steps if avg_steps > 0 else 0
+        
+        # Store control usage stats
+        self.last_eval_rod_usage = np.mean(rod_usage)
+        self.last_eval_flow_usage = np.mean(flow_usage)
         
         return reward_per_step, avg_reward, avg_steps
     
@@ -375,12 +404,13 @@ def main():
         action_dim=action_dim,
         device=DEVICE,
         lr_actor=3e-4,           # Actor LR unchanged
-        lr_critic=1e-4,          # CHANGED: Was 3e-4, now 1e-4 (more conservative)
+        lr_critic=5e-5,          # Reduced from 1e-4 to 5e-5 (half the rate)
         lr_alpha=3e-4,           # Alpha LR unchanged
         gamma=0.99,
         tau=0.005,
-        alpha=0.2,               # Initial value (will be auto-tuned)
-        auto_entropy_tuning=True
+        alpha=0.05,              # Start much lower for stability
+        auto_entropy_tuning=True,
+        target_update_interval=1  # Add this parameter
     )
     
     # Create trainer
@@ -399,9 +429,9 @@ def main():
     trainer.train(
         total_timesteps=200000,      # CHANGED: Was 50000, now 200000 (4x longer)
         batch_size=256,              # Unchanged
-        eval_frequency=5000,         # Unchanged
+        eval_frequency=10000,        # Evaluate less often (faster training)
         save_frequency=50000,        # CHANGED: Was 25000, now 50000 (save less often)
-        target_reward_per_step=60.0  # Target: beat baseline (33) by achieving 36+
+        target_reward_per_step=70.0  # High target to ensure full 200K training
     )
     
     # Final evaluation
