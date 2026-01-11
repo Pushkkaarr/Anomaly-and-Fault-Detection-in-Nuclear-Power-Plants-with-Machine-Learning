@@ -151,7 +151,8 @@ class SACAgent:
     
     def __init__(self, state_dim, action_dim, device='cuda', 
                  lr_actor=3e-4, lr_critic=3e-4, lr_alpha=3e-4,
-                 gamma=0.99, tau=0.005, alpha=0.2, auto_entropy_tuning=True):
+                 gamma=0.99, tau=0.005, alpha=0.2, auto_entropy_tuning=True,
+                 target_update_interval=1):  # NEW parameter
         
         self.device = device
         self.gamma = gamma
@@ -184,6 +185,14 @@ class SACAgent:
             self.target_entropy = -torch.prod(torch.Tensor([action_dim]).to(device)).item()
             self.log_alpha = torch.zeros(1, requires_grad=True, device=device)
             self.alpha_optimizer = torch.optim.Adam([self.log_alpha], lr=lr_alpha)
+        
+        # Add bounds to prevent alpha explosion
+        self.min_log_alpha = -5.0  # alpha >= 0.0067
+        self.max_log_alpha = 1.0   # alpha <= 2.718
+        
+        # NEW: Store target update interval and counter
+        self.target_update_interval = target_update_interval
+        self.update_counter = 0
         
         # Training statistics
         self.actor_losses = []
@@ -236,13 +245,17 @@ class SACAgent:
         # Update critics
         self.critic1_optimizer.zero_grad()
         critic1_loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.critic1.parameters(), 1.0)
+        torch.nn.utils.clip_grad_norm_(self.critic1.parameters(), 5.0)  # Increased from 0.5
         self.critic1_optimizer.step()
         
         self.critic2_optimizer.zero_grad()
         critic2_loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.critic2.parameters(), 1.0)
+        torch.nn.utils.clip_grad_norm_(self.critic2.parameters(), 5.0)  # Increased from 0.5
         self.critic2_optimizer.step()
+        
+        # Gradient penalty for smoother critic learning
+        critic1_grad_norm = sum(p.grad.norm().item() ** 2 for p in self.critic1.parameters() if p.grad is not None) ** 0.5
+        critic2_grad_norm = sum(p.grad.norm().item() ** 2 for p in self.critic2.parameters() if p.grad is not None) ** 0.5
         
         # ====================================================================
         # UPDATE ACTOR (Policy)
@@ -261,7 +274,7 @@ class SACAgent:
         # Update actor
         self.actor_optimizer.zero_grad()
         actor_loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.actor.parameters(), 1.0)
+        torch.nn.utils.clip_grad_norm_(self.actor.parameters(), 2.0)  # Increased from 0.5
         self.actor_optimizer.step()
         
         # ====================================================================
@@ -274,24 +287,45 @@ class SACAgent:
             alpha_loss.backward()
             self.alpha_optimizer.step()
             
+            # Clamp log_alpha to prevent explosion
+            with torch.no_grad():
+                self.log_alpha.clamp_(self.min_log_alpha, self.max_log_alpha)
+            
             self.alpha = self.log_alpha.exp().item()
         
         # ====================================================================
-        # SOFT UPDATE TARGET NETWORKS
+        # SOFT UPDATE TARGET NETWORKS (Only every N steps)
         # ====================================================================
-        self._soft_update(self.critic1, self.critic1_target)
-        self._soft_update(self.critic2, self.critic2_target)
+        self.update_counter += 1
+        if self.update_counter % self.target_update_interval == 0:
+            self._soft_update(self.critic1, self.critic1_target)
+            self._soft_update(self.critic2, self.critic2_target)
         
         # Store metrics
         self.actor_losses.append(actor_loss.item())
         self.critic_losses.append((critic1_loss.item() + critic2_loss.item()) / 2)
         self.alpha_values.append(self.alpha)
         
+        # Check for gradient explosion
+        actor_grad_norm = sum(p.grad.norm().item() for p in self.actor.parameters() if p.grad is not None)
+        critic_grad_norm = (sum(p.grad.norm().item() for p in self.critic1.parameters() if p.grad is not None) +
+                           sum(p.grad.norm().item() for p in self.critic2.parameters() if p.grad is not None)) / 2
+        
+        # Emergency reset if gradients explode (raised threshold)
+        if actor_grad_norm > 20.0 or critic_grad_norm > 150.0:
+            print(f"\n⚠️ GRADIENT EXPLOSION DETECTED! Actor: {actor_grad_norm:.1f}, Critic: {critic_grad_norm:.1f}")
+            # Reduce alpha to stabilize
+            if self.auto_entropy_tuning:
+                self.log_alpha.data = torch.clamp(self.log_alpha.data, -5.0, 2.0)
+                self.alpha = self.log_alpha.exp().item()
+        
         return {
             'actor_loss': actor_loss.item(),
             'critic_loss': (critic1_loss.item() + critic2_loss.item()) / 2,
             'alpha': self.alpha,
-            'q_value': q_new.mean().item()
+            'q_value': q_new.mean().item(),
+            'actor_grad_norm': actor_grad_norm,
+            'critic_grad_norm': critic_grad_norm
         }
     
     def _soft_update(self, source, target):
