@@ -323,20 +323,13 @@ class NuclearReactorEnv(gym.Env):
         if abs(Tf - 1095.0) < 10.0 and flow_magnitude > 0.5:
             reward -= 8.0  # Don't slam pumps when temp is fine
         
-        # C. COORDINATION BONUS - Realistic Multi-Variable Control
-        # Real operators coordinate rod and flow movements
-        
-        # Scenario 1: Power rising, temperature rising
-        # Correct response: Insert rods (negative) AND increase flow (positive)
-        if P > 1.05 and Tf > 1100.0:
-            if rod_action < -0.05 and flow_action > 0.1:
-                reward += 10.0  # Excellent coordinated response!
-        
-        # Scenario 2: Power dropping, temperature dropping  
-        # Correct response: Withdraw rods (positive) AND decrease flow (negative)
-        if P < 0.95 and Tf < 1090.0:
-            if rod_action > 0.05 and flow_action < -0.1:
-                reward += 10.0  # Excellent coordinated response!
+        # C. COORDINATION BONUS - Simplified
+        # Reward using both controls together (less specific conditions)
+        rod_magnitude = abs(rod_action)
+        flow_magnitude = abs(flow_action)
+        if rod_magnitude > 0.05 and flow_magnitude > 0.1:
+            # Both controls active = coordinated response
+            reward += 3.0  # Reduced from 10.0
         
         # =================================================================
         # 4. CONTROL QUALITY - Smooth Professional Operation
@@ -376,9 +369,11 @@ class NuclearReactorEnv(gym.Env):
         # =================================================================
         # 7. REWARD NORMALIZATION (CRITICAL for gradient stability)
         # =================================================================
-        # Scale down rewards to prevent gradient explosion
-        # Typical range is now -50 to +60, we'll normalize to -10 to +12
-        reward = reward * 0.2  # Scale factor
+        # Aggressive scaling to prevent gradient explosion
+        reward = reward * 0.1  # Changed from 0.2 to 0.1 (half the scale)
+
+        # Additional hard clipping as safety net
+        reward = np.clip(reward, -15.0, 15.0)
 
         return reward
     
