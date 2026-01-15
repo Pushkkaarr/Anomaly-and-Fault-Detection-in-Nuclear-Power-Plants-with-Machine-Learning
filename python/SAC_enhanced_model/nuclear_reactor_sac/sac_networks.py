@@ -245,12 +245,12 @@ class SACAgent:
         # Update critics
         self.critic1_optimizer.zero_grad()
         critic1_loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.critic1.parameters(), 5.0)  # Increased from 0.5
+        torch.nn.utils.clip_grad_norm_(self.critic1.parameters(), 10.0)  # Increased from 5.0
         self.critic1_optimizer.step()
         
         self.critic2_optimizer.zero_grad()
         critic2_loss.backward()
-        torch.nn.utils.clip_grad_norm_(self.critic2.parameters(), 5.0)  # Increased from 0.5
+        torch.nn.utils.clip_grad_norm_(self.critic2.parameters(), 10.0)  # Increased from 5.0
         self.critic2_optimizer.step()
         
         # Gradient penalty for smoother critic learning
@@ -312,7 +312,7 @@ class SACAgent:
                            sum(p.grad.norm().item() for p in self.critic2.parameters() if p.grad is not None)) / 2
         
         # Emergency reset if gradients explode (raised threshold)
-        if actor_grad_norm > 20.0 or critic_grad_norm > 150.0:
+        if actor_grad_norm > 50.0 or critic_grad_norm > 500.0:
             print(f"\n⚠️ GRADIENT EXPLOSION DETECTED! Actor: {actor_grad_norm:.1f}, Critic: {critic_grad_norm:.1f}")
             # Reduce alpha to stabilize
             if self.auto_entropy_tuning:
