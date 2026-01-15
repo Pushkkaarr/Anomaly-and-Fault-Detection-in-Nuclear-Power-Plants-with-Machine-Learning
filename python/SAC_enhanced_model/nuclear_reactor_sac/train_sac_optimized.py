@@ -403,8 +403,8 @@ def main():
         state_dim=state_dim,
         action_dim=action_dim,
         device=DEVICE,
-        lr_actor=3e-4,           # Actor LR unchanged
-        lr_critic=5e-5,          # Reduced from 1e-4 to 5e-5 (half the rate)
+        lr_actor=5e-4,           # Increased slightly from 3e-4
+        lr_critic=1e-5,          # Reduced to 1/10th of actor LR
         lr_alpha=3e-4,           # Alpha LR unchanged
         gamma=0.99,
         tau=0.005,
