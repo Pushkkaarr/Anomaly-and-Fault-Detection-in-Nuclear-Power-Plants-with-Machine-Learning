@@ -367,13 +367,13 @@ class NuclearReactorEnv(gym.Env):
         reward += 1.0  # Small bonus for staying alive
 
         # =================================================================
-        # 7. REWARD NORMALIZATION (CRITICAL for gradient stability)
+        # 7. REWARD NORMALIZATION - Balanced for Learning Speed & Stability
         # =================================================================
-        # Aggressive scaling to prevent gradient explosion
-        reward = reward * 0.1  # Changed from 0.2 to 0.1 (half the scale)
+        # Sweet spot: 0.15 scaling (between 0.1 too slow and 0.2 unstable)
+        reward = reward * 0.15  # CHANGED: from 0.1 to 0.15
 
-        # Additional hard clipping as safety net
-        reward = np.clip(reward, -15.0, 15.0)
+        # Clip to reasonable bounds
+        reward = np.clip(reward, -12.0, 12.0)  # CHANGED: from ±15 to ±12
 
         return reward
     
