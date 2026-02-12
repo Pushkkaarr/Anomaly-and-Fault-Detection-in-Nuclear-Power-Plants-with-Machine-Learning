@@ -1,23 +1,23 @@
 {
-    "training_date": "2026-01-10 15:23:34",
-    "total_episodes": 9,
-    "best_reward_per_step": 48.08270373047174,
-    "best_episode": 3,
-    "final_avg_reward_per_step": -0.4085093140602112,
-    "final_avg_total_reward": -654.5317993164062,
+    "training_date": "2026-01-18 14:58:58",
+    "total_episodes": 180,
+    "best_reward_per_step": 7.348111895485218,
+    "best_episode": 111,
+    "final_avg_reward_per_step": 6.928760528564453,
+    "final_avg_total_reward": 7896.83984375,
     "buffer_statistics": {
-        "size": 15001,
-        "avg_reward": -0.013413656502962112,
-        "std_reward": 21.3222599029541,
-        "min_reward": -33.305931091308594,
-        "max_reward": 551.591064453125,
+        "size": 210000,
+        "avg_reward": 5.490504264831543,
+        "std_reward": 14.815055847167969,
+        "min_reward": -1.591610312461853,
+        "max_reward": 507.79998779296875,
         "high_priority_fraction": 0.0
     },
     "hyperparameters": {
         "gamma": 0.99,
         "tau": 0.005,
         "initial_alpha": 0.2,
-        "final_alpha": 0.2511673867702484,
+        "final_alpha": 0.07033632695674896,
         "auto_entropy_tuning": true
     }
 }
