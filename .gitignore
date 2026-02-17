@@ -3,11 +3,13 @@ __pycache__/
 *.py[codz]
 *$py.class
 
-
+# Virtual environments
+myenv/
+.myenv/
+python/myenv
 python/SAC_enhanced_model/nuclear_reactor_sac/models/SAC_Models_With_good Results/*.png
 # C extensions
 *.so
-python/myenv
 # Distribution / packaging
 .Python
 build/
@@ -195,7 +197,7 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
-
+myenv/
 # Cursor
 #  Cursor is an AI-powered code editor. `.cursorignore` specifies files/directories to
 #  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data

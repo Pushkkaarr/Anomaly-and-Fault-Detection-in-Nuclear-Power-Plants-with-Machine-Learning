@@ -1,0 +1,30 @@
+# Flask Web Framework
+Flask
+Flask-CORS
+Werkzeug
+
+# PyTorch
+torch
+torchvision
+torchaudio
+
+# Science & Math Libraries
+numpy
+scipy
+scikit-learn
+
+# Gymnasium (RL environments)
+gymnasium
+
+# Data Processing
+pandas
+Pillow
+
+# Utilities
+python-dotenv
+requests
+tqdm
+
+# Development & Debugging (optional)
+ipython
+jupyter
