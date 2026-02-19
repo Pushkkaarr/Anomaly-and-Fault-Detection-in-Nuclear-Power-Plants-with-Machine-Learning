@@ -2,6 +2,11 @@
 Flask
 Flask-CORS
 Werkzeug
+flask-sock
+
+# WebSocket Support
+python-socketio
+python-engineio
 
 # PyTorch
 torch

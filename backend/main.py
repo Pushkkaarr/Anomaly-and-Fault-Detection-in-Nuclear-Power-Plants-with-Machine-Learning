@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from backend.utils.config import DevelopmentConfig, ProductionConfig
 from backend.utils.logger import setup_logger
 from backend.api.routes import api_bp
+from backend.api.websocket_handler import init_socketio
 
 
 logger = setup_logger(__name__)
@@ -49,6 +50,10 @@ def create_app(config_name: str = "development") -> Flask:
             "supports_credentials": True
         }
     })
+    
+    # Initialize SocketIO for real-time WebSocket + long-polling support
+    socketio = init_socketio(app)
+    logger.info("✓ SocketIO support initialized (ws://localhost:8000/api/ws with http long-polling fallback)")
     
     # Register blueprints
     app.register_blueprint(api_bp)
@@ -98,9 +103,15 @@ if __name__ == '__main__':
     logger.info("API Documentation: http://localhost:8000/api/status")
     logger.info("=" * 70)
     
-    app.run(
+    # Import socketio from websocket_handler to run with it
+    from backend.api.websocket_handler import socketio
+    
+    # Use socketio.run() instead of app.run() to properly support WebSocket + long-polling
+    socketio.run(
+        app,
         host='0.0.0.0',
         port=8000,
         debug=True,
-        use_reloader=True
+        use_reloader=True,
+        allow_unsafe_werkzeug=True
     )
