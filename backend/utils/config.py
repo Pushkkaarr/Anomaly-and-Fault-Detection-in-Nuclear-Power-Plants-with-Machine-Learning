@@ -66,9 +66,9 @@ class TestingConfig(Config):
 
 # Application settings
 SIMULATION_CONFIG = {
-    "default_duration": 60.0,  # seconds
+    "default_duration": 20.0,  # seconds - reduced from 60 for faster scenarios
     "timestep": 0.1,  # seconds
-    "max_steps": 1000,
+    "max_steps": 200,  # reduced from 1000 - 200 steps * 0.1s = 20s simulation time
     "device": "cpu",  # or 'cuda' if available
 }
 
@@ -87,7 +87,7 @@ SCENARIOS = {
         "description": "Coolant pump failure at t=5s, flow drops 40%",
         "difficulty": "hard",
         "disturbance_time": 5.0,
-        "disturbance_type": "flow_loss"
+        "disturbance_type": "lofa"
     },
     "rod_malfunction": {
         "id": "rod_malfunction",

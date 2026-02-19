@@ -194,8 +194,9 @@ def reset_simulation():
         
         return jsonify(ResponseFormatter.success(
             data={
-                "state": initial_state,
-                "step": 0,
+                "reactor_state": initial_state,
+                "episode_step": 0,
+                "is_running": False,
                 "message": "Simulation reset successfully"
             },
             message="Environment reset successfully"
@@ -267,10 +268,11 @@ def start_simulation():
         
         return jsonify(ResponseFormatter.success(
             data={
-                "state": initial_state,
+                "reactor_state": initial_state,
+                "episode_step": 0,
+                "is_running": True,
                 "model_id": model_id,
-                "scenario_id": scenario_id,
-                "step": 0
+                "scenario_id": scenario_id
             },
             message="Simulation started successfully"
         )), 200
@@ -349,14 +351,14 @@ def simulation_step():
         
         return jsonify(ResponseFormatter.success(
             data={
-                "state": next_state,
+                "reactor_state": next_state,
+                "episode_step": _simulation_state["episode_step"],
                 "action": {
                     "control_rod": float(action[0]),
                     "coolant_flow": float(action[1])
                 },
                 "reward": float(reward),
-                "done": bool(done),
-                "step": _simulation_state["episode_step"]
+                "done": bool(done)
             },
             message="Simulation step executed"
         )), 200
@@ -411,14 +413,14 @@ def manual_action():
         
         return jsonify(ResponseFormatter.success(
             data={
-                "state": next_state,
+                "reactor_state": next_state,
+                "episode_step": _simulation_state["episode_step"],
                 "action": {
                     "control_rod": float(action[0]),
                     "coolant_flow": float(action[1])
                 },
                 "reward": float(reward),
-                "done": bool(done),
-                "step": _simulation_state["episode_step"]
+                "done": bool(done)
             },
             message="Manual action executed"
         )), 200
@@ -442,10 +444,9 @@ def get_state():
     
     return jsonify(ResponseFormatter.success(
         data={
-            "state": _simulation_state["current_state"],
-            "step": _simulation_state["episode_step"],
-            "is_running": _simulation_state["is_running"],
-            "model": _simulation_state["current_model"]
+            "reactor_state": _simulation_state["current_state"],
+            "episode_step": _simulation_state["episode_step"],
+            "is_running": _simulation_state["is_running"]
         },
         message="Current state retrieved"
     )), 200
