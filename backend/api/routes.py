@@ -10,6 +10,7 @@ import numpy as np
 from backend.core.model_manager import ModelManager
 from backend.core.reactor_physics import ReactorEnvironmentWrapper
 from backend.api.responses import ResponseFormatter
+from backend.api.websocket_handler import broadcast_simulation_state
 from backend.utils.config import SCENARIOS
 from backend.utils.logger import setup_logger
 from backend.utils.errors import (
@@ -55,8 +56,8 @@ def get_status():
         "available_scenarios": list(SCENARIOS.keys()),
         "simulation_config": {
             "timestep": 0.1,
-            "max_steps": 1000,
-            "default_duration": 60.0
+            "max_steps": 200,
+            "default_duration": 20.0
         }
     }
     
@@ -349,17 +350,27 @@ def simulation_step():
         if done:
             _simulation_state["is_running"] = False
         
-        return jsonify(ResponseFormatter.success(
-            data={
-                "reactor_state": next_state,
-                "episode_step": _simulation_state["episode_step"],
-                "action": {
-                    "control_rod": float(action[0]),
-                    "coolant_flow": float(action[1])
-                },
-                "reward": float(reward),
-                "done": bool(done)
+        # Prepare response data
+        response_data = {
+            "reactor_state": next_state,
+            "episode_step": _simulation_state["episode_step"],
+            "action": {
+                "control_rod": float(action[0]),
+                "coolant_flow": float(action[1])
             },
+            "reward": float(reward),
+            "done": bool(done)
+        }
+        
+        # Log before broadcast to ensure data is valid
+        try:
+            logger.debug(f"Broadcasting state for step {_simulation_state['episode_step']}")
+            broadcast_simulation_state(response_data)
+        except Exception as e:
+            logger.error(f"Error broadcasting simulation state: {e}", exc_info=True)
+        
+        return jsonify(ResponseFormatter.success(
+            data=response_data,
             message="Simulation step executed"
         )), 200
     
