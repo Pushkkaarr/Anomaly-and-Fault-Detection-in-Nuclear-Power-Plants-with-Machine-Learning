@@ -54,7 +54,7 @@ export const AIActionDisplay: React.FC<AIActionDisplayProps> = ({
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
             <div
-              className="h-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-300"
+              className="h-full bg-linear-to-r from-blue-400 to-blue-600 transition-all duration-300"
               style={{
                 width: `${progressPercent}%`,
               }}

@@ -82,24 +82,24 @@ export const ScenarioSummary: React.FC<ScenarioSummaryProps> = ({
           {/* Total Reward */}
           <div className="rounded-lg bg-white/50 px-3 py-2">
             <p className="text-xs text-gray-600">Total Reward</p>
-            <p className={`text-lg font-bold ${metrics.total_reward > 0 ? "text-green-700" : "text-red-700"}`}>
-              {metrics.total_reward.toFixed(2)}
+            <p className={`text-lg font-bold ${(metrics.total_reward ?? 0) > 0 ? "text-green-700" : "text-red-700"}`}>
+              {(metrics.total_reward ?? 0).toFixed(2)}
             </p>
           </div>
 
           {/* Max Fuel Temp */}
           <div className="rounded-lg bg-white/50 px-3 py-2">
             <p className="text-xs text-gray-600">Max Fuel Temp</p>
-            <p className={`text-lg font-bold ${fuelTempMax <= 1100 ? "text-green-700" : "text-red-700"}`}>
-              {fuelTempMax.toFixed(1)}K
+            <p className={`text-lg font-bold ${(fuelTempMax ?? 0) <= 1100 ? "text-green-700" : "text-red-700"}`}>
+              {(fuelTempMax ?? 0).toFixed(1)}K
             </p>
           </div>
 
           {/* Final Fuel Temp */}
           <div className="rounded-lg bg-white/50 px-3 py-2">
             <p className="text-xs text-gray-600">Final Fuel Temp</p>
-            <p className={`text-lg font-bold ${fuelTempCurrent <= 1100 ? "text-green-700" : "text-red-700"}`}>
-              {fuelTempCurrent.toFixed(1)}K
+            <p className={`text-lg font-bold ${(fuelTempCurrent ?? 0) <= 1100 ? "text-green-700" : "text-red-700"}`}>
+              {(fuelTempCurrent ?? 0).toFixed(1)}K
             </p>
           </div>
         </div>
