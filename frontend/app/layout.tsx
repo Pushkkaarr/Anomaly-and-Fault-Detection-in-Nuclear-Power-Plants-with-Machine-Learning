@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetBrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Nuclear Reactor Control System",
+  title: "Nuclear Reactor Control System | SAC Agent",
   description:
-    "AI-powered nuclear reactor control and monitoring system using SAC models",
+    "AI-powered nuclear reactor anomaly & fault detection using Soft Actor-Critic reinforcement learning models. Real-time simulation and visualization.",
 };
 
 export default function RootLayout({
@@ -24,9 +26,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" style={{ background: "#020812" }}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50`}
+        className={`${inter.variable} ${jetBrainsMono.variable} antialiased`}
+        style={{ background: "#020812", colorScheme: "dark" }}
       >
         {children}
       </body>
