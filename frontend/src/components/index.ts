@@ -1,21 +1,11 @@
 /**
  * Component Exports
- * Centralized export point for all components
  */
 
 // UI Components
 export * from "./ui";
 
-// Visualization Components
-export {
-  Gauge,
-  GaugesPanel,
-  ControlRods,
-  TemperatureHeatmap,
-  LiveGraph,
-} from "./Visualizations";
-
-// Control Components
+// Controls
 export {
   ModelSelector,
   ScenarioSelector,
@@ -24,13 +14,17 @@ export {
   SimulationStatus,
 } from "./Controls";
 
-// Metrics Components
+// Metrics
 export {
   EventLog,
   MetricsSummary,
   ScoreCard,
-  PerformanceComparison,
 } from "./Metrics";
+
+// Visualizations
+export { ReactorVisualization } from "./ReactorVisualization";
+export { default as AnalogGauge } from "./AnalogGauge";
+export { default as LiveGraphs } from "./LiveGraphs";
 
 // Dashboard
 export { default as Dashboard } from "./Dashboard";

@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { apiClient, getErrorMessage, isApiError } from "@/lib/api";
-import { useSimulation } from "@/store/simulation";
+import { apiClient, getErrorMessage } from "@/lib/api";
+import { useSimulation, useSimulationStore } from "@/store/simulation";
 import {
   Model,
   Scenario,
-  ReactorState,
-  SimulationEvent,
   Action,
 } from "@/types/reactor";
 
@@ -98,14 +96,9 @@ export function useBackendHealth() {
       }
     };
 
-    // Wait a moment for port discovery to complete before first health check
-    const initialDelay = setTimeout(checkHealth, 2000);
-    const interval = setInterval(checkHealth, 8000);
-
-    return () => {
-      clearTimeout(initialDelay);
-      clearInterval(interval);
-    };
+    checkHealth();
+    const interval = setInterval(checkHealth, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return { isHealthy, isChecking };
@@ -176,81 +169,88 @@ export function useSimulationControl() {
       store.addStateToHistory(response.reactor_state);
       store.setEpisodeStep(response.episode_step || store.episode_step + 1);
 
-      // Save the AI's control action - ONLY log on significant changes (every 5 steps)
-      if (response.action && response.episode_step % 5 === 0) {
-        store.setLastAction(response.action);
-        // Log once every 5 steps to reduce spam
-        store.addEvent({
-          timestamp: response.reactor_state.time,
-          type: "info",
-          message: `AI: Rod=${response.action.control_rod.toFixed(3)}, Flow=${response.action.coolant_flow.toFixed(3)}`,
-          icon: "zap",
-        });
-      } else if (response.action) {
-        store.setLastAction(response.action);
-        // Update the action silently without logging every step
-      }
+      // Accumulate reward for final metrics
+      const newReward = (store.current_reward || 0) + (response.reward || 0);
+      store.setCurrentReward(newReward);
 
-      // Check for critical conditions - ONLY log on status CHANGE, not every step
-      const isCritical = response.reactor_state.fuel_temp > 900;
-      const currentStatus = isCritical ? "critical" : "safe";
-
-      if (lastCriticalTempStatus !== currentStatus) {
-        setLastCriticalTempStatus(currentStatus);
-        if (isCritical) {
+      // Save the AI's control action — log every 5 steps to avoid spam
+      if (response.action) {
+        store.setLastAction(response.action);
+        if (response.episode_step % 5 === 0) {
           store.addEvent({
             timestamp: response.reactor_state.time,
-            type: "critical",
-            message: `⚠️ Temperature critical: ${response.reactor_state.fuel_temp.toFixed(1)}K (threshold 900K)`,
-            icon: "thermometer",
-          });
-        } else {
-          store.addEvent({
-            timestamp: response.reactor_state.time,
-            type: "success",
-            message: `✓ Temperature returned to safe zone: ${response.reactor_state.fuel_temp.toFixed(1)}K`,
-            icon: "thermometer",
+            type: "info",
+            message: `AI: Rod=${response.action.control_rod.toFixed(3)}, Flow=${response.action.coolant_flow.toFixed(3)}`,
+            icon: "zap",
           });
         }
       }
 
+      // Alert only on status CHANGE (not every step)
+      const isCritical = response.reactor_state.fuel_temp > 900;
+      const currentStatus = isCritical ? "critical" : "safe";
+      if (lastCriticalTempStatus !== currentStatus) {
+        setLastCriticalTempStatus(currentStatus);
+        store.addEvent({
+          timestamp: response.reactor_state.time,
+          type: isCritical ? "critical" : "success",
+          message: isCritical
+            ? `⚠️ Temp critical: ${response.reactor_state.fuel_temp.toFixed(1)}K (>900K threshold)`
+            : `✓ Temp safe: ${response.reactor_state.fuel_temp.toFixed(1)}K`,
+          icon: "thermometer",
+        });
+      }
+
+      // Episode ended naturally (backend sets is_running=False before responding)
       if (response.done) {
         store.setIsRunning(false);
         store.addEvent({
           timestamp: response.reactor_state.time,
-          type: "info",
-          message: "Simulation episode completed - retrieving metrics...",
+          type: "success",
+          message: `Episode complete — ${response.episode_step} steps | reward ${newReward.toFixed(1)}`,
           icon: "check",
         });
 
-        // Get final metrics
+        // Try stopSimulation to get full backend summary, but don't crash if backend
+        // already marked the run finished (returns 400 when is_running=False)
         try {
           const summary = await apiClient.stopSimulation();
           store.setMetrics({
-            total_reward: summary?.total_reward ?? 0,
-            episode_steps: summary?.episode_steps ?? 0,
-            episode_duration: summary?.episode_duration ?? 0,
-            max_fuel_temp: summary?.max_fuel_temp ?? 0,
-            max_coolant_temp: summary?.max_coolant_temp ?? 0,
-            avg_pressure: summary?.avg_pressure ?? 0,
-            power_change_rate: 0, // Not returned from backend
-            safety_events: 0, // Not returned from backend
+            total_reward: summary?.total_reward ?? newReward,
+            episode_steps: summary?.episode_steps ?? response.episode_step,
+            episode_duration: summary?.episode_duration ?? response.reactor_state.time,
+            max_fuel_temp: summary?.max_fuel_temp ?? response.reactor_state.fuel_temp,
+            max_coolant_temp: summary?.max_coolant_temp ?? response.reactor_state.coolant_temp,
+            avg_pressure: summary?.avg_pressure ?? response.reactor_state.pressure,
+            power_change_rate: 0,
+            safety_events: 0,
           });
-        } catch (error) {
-          console.error("Failed to get final metrics:", error);
+        } catch {
+          // Backend already stopped — compute metrics from what we accumulated
+          const history = store.history || [];
+          const maxFuelTemp = history.reduce((m, s) => Math.max(m, s.fuel_temp), 0);
+          const maxCoolant = history.reduce((m, s) => Math.max(m, s.coolant_temp), 0);
+          const avgPressure = history.length
+            ? history.reduce((s, st) => s + st.pressure, 0) / history.length
+            : response.reactor_state.pressure;
+          store.setMetrics({
+            total_reward: newReward,
+            episode_steps: response.episode_step,
+            episode_duration: response.reactor_state.time,
+            max_fuel_temp: maxFuelTemp || response.reactor_state.fuel_temp,
+            max_coolant_temp: maxCoolant || response.reactor_state.coolant_temp,
+            avg_pressure: avgPressure,
+            power_change_rate: 0,
+            safety_events: 0,
+          });
         }
       }
 
       return response;
     } catch (error) {
       const errorMsg = getErrorMessage(error);
-      console.error("[stepSimulation] Error:", {
-        message: errorMsg,
-        error: error instanceof Error ? error.stack : String(error),
-      });
 
-      // If polling is active, we still want to continue trying
-      // Only stop on critical errors
+      // Stop on structural errors only, not on transient 400s
       if (error instanceof Error && error.message.includes("Invalid response from stepSimulation")) {
         store.setIsRunning(false);
         store.addEvent({
@@ -261,8 +261,6 @@ export function useSimulationControl() {
         });
       }
 
-      // Log the error but don't crash polling
-      console.error("[stepSimulation] Error details:", { errorMsg, error });
       throw error;
     }
   }, [store, lastCriticalTempStatus]);
@@ -388,11 +386,8 @@ export function useWebSocketSimulation(isEnabled: boolean) {
         // Dynamically import socket.io-client
         const { io } = await import("socket.io-client");
 
-        // Use the same port that apiClient discovered — avoids hardcoding 8000
-        const apiBase = apiClient.getBaseURL(); // e.g. "http://localhost:5000/api"
-        const socketURL = apiBase.replace('/api', '');
-
-        console.log("[Socket.IO] Attempting to connect to:", socketURL);
+        // Backend always runs on port 8000
+        const socketURL = "http://localhost:8000";
 
         // Create Socket.IO connection
         socket = io(socketURL, {
@@ -548,46 +543,44 @@ export function useWebSocketSimulation(isEnabled: boolean) {
 }
 
 /**
- * Hook for auto-stepping simulation (DEPRECATED - use WebSocket instead)
- * Falls back to HTTP polling if WebSocket fails
+ * Hook for auto-stepping simulation — HTTP polling fallback when WebSocket unavailable.
+ * Uses Zustand's getState() for stale-closure-safe is_running checks inside setInterval.
  */
 export function useAutoStep(isAutoStepping: boolean, interval: number = 100) {
   const { stepSimulation } = useSimulationControl();
   const store = useSimulation();
   const { wsConnected, wsError } = useWebSocketSimulation(isAutoStepping && store.is_running);
 
-  // Only use HTTP polling if WebSocket is not available
   useEffect(() => {
-    if (!isAutoStepping || !store.is_running || wsConnected) {
-      console.log(`[AutoStep] Polling disabled - isAutoStepping: ${isAutoStepping}, is_running: ${store.is_running}, wsConnected: ${wsConnected}`);
-      return;
-    }
+    // Don't poll if: not enabled, not running, or WS is covering real-time updates
+    if (!isAutoStepping || !store.is_running || wsConnected) return;
 
-    console.log("[AutoStep] WebSocket unavailable, falling back to HTTP polling...");
+    let consecutiveErrors = 0;
+    const MAX_ERRORS = 3; // Stop polling after 3 back-to-back 400s
 
-    let stepCount = 0;
     const timer = setInterval(async () => {
+      // ✅ Read CURRENT store state — avoids stale React closure
+      const isCurrentlyRunning = useSimulationStore.getState().is_running;
+
+      if (!isCurrentlyRunning) {
+        clearInterval(timer);
+        return;
+      }
+
       try {
-        stepCount++;
-        console.log(`[AutoStep] Poll attempt #${stepCount}, store running: ${store.is_running}`);
-
-        if (!store.is_running) {
-          console.log("[AutoStep] Simulation stopped, clearing polling interval");
-          clearInterval(timer);
-          return;
-        }
-
         await stepSimulation();
+        consecutiveErrors = 0; // Reset on success
       } catch (error) {
-        console.error("[AutoStep] Failed:", error instanceof Error ? error.message : String(error));
-        console.error("[AutoStep] Full error object:", error);
+        consecutiveErrors++;
+        if (consecutiveErrors >= MAX_ERRORS) {
+          // Backend says simulation not running — stop polling
+          useSimulationStore.getState().setIsRunning(false);
+          clearInterval(timer);
+        }
       }
     }, interval);
 
-    return () => {
-      console.log(`[AutoStep] Cleanup - cleared ${stepCount} attempts`);
-      clearInterval(timer);
-    };
+    return () => clearInterval(timer);
   }, [isAutoStepping, interval, stepSimulation, store.is_running, wsConnected]);
 
   return { wsConnected, wsError };
