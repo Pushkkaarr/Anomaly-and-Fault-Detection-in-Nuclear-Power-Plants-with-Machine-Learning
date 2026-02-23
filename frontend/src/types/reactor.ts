@@ -4,18 +4,18 @@
  */
 
 export interface ReactorState {
-  power: number; // Reactor power (MW)
-  precursors: number; // Delayed neutron precursor concentration
-  fuel_temp: number; // Fuel temperature (K)
+  power: number;       // Reactor power (normalized ~1.0)
+  precursors: number;  // Delayed neutron precursor concentration
+  fuel_temp: number;   // Fuel temperature (K)
   coolant_temp: number; // Coolant temperature (K)
-  pressure: number; // System pressure (bar)
-  power_rate: number; // Rate of power change
-  temp_rate: number; // Rate of temperature change
-  time: number; // Simulation time (s)
+  pressure: number;    // System pressure (bar)
+  power_rate: number;  // Rate of power change
+  temp_rate: number;   // Rate of temperature change
+  time: number;        // Simulation time (s)
 }
 
 export interface Action {
-  control_rod: number; // Control rod position (-1.0 to 1.0)
+  control_rod: number;  // Control rod position (-1.0 to 1.0)
   coolant_flow: number; // Coolant flow rate (-1.0 to 1.0)
 }
 
@@ -32,6 +32,7 @@ export interface Scenario {
   id: string;
   name: string;
   description: string;
+  difficulty?: string;
   trigger_time?: number;
   parameters?: Record<string, unknown>;
 }
@@ -41,7 +42,7 @@ export interface SimulationEvent {
   timestamp: number;
   type: "info" | "warning" | "critical" | "success";
   message: string;
-  icon?: string; // lucide-react icon name
+  icon?: string;
 }
 
 export interface SimulationMetrics {
@@ -67,15 +68,8 @@ export interface SimulationState {
   error_message: string | null;
   last_action: Action | null;
   _event_counter?: number;
-}
-
-export interface ComparisonData {
-  model1_id: string;
-  model2_id: string;
-  scenario_id: string;
-  model1_metrics: SimulationMetrics | null;
-  model2_metrics: SimulationMetrics | null;
-  completed: boolean;
+  history: ReactorState[];      // Rolling history for live graphs
+  current_reward: number;
 }
 
 export interface HealthResponse {

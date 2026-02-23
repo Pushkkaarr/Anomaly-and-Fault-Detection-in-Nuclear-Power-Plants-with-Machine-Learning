@@ -19,17 +19,8 @@ const INITIAL_SIMULATION_STATE: SimulationState = {
   error_message: null,
   last_action: null,
   _event_counter: 0,
-};
-
-const INITIAL_REACTOR_STATE: ReactorState = {
-  power: 100,
-  precursors: 0,
-  fuel_temp: 573.15, // 300°C
-  coolant_temp: 573.15, // 300°C
-  pressure: 100,
-  power_rate: 0,
-  temp_rate: 0,
-  time: 0,
+  history: [],
+  current_reward: 0,
 };
 
 const INITIAL_METRICS: SimulationMetrics = {
@@ -54,6 +45,11 @@ interface SimulationStore extends SimulationState {
   setEpisodeStep: (step: number) => void;
   setErrorMessage: (message: string | null) => void;
   setLastAction: (action: Action | null) => void;
+  setCurrentReward: (reward: number) => void;
+
+  // History for live graph (circular buffer of 80 points)
+  addStateToHistory: (state: ReactorState) => void;
+  clearHistory: () => void;
 
   // Event Management (circular buffer of 100 events)
   addEvent: (event: Omit<SimulationEvent, 'id'>) => void;
@@ -76,18 +72,25 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
   setEpisodeStep: (step) => set({ episode_step: step }),
   setErrorMessage: (message) => set({ error_message: message }),
   setLastAction: (action) => set({ last_action: action }),
+  setCurrentReward: (reward) => set({ current_reward: reward }),
+
+  addStateToHistory: (state) => {
+    const currentHistory = get().history || [];
+    const newHistory = [...currentHistory, state].slice(-80); // Keep last 80 points
+    set({ history: newHistory });
+  },
+
+  clearHistory: () => set({ history: [] }),
 
   addEvent: (event) => {
     const currentEvents = get().events;
     const counter = get()._event_counter ?? 0;
     
-    // Create event with guaranteed unique ID
     const newEvent: SimulationEvent = {
       ...event,
       id: `event-${counter}`,
     };
     
-    // Keep circular buffer of max 100 events
     const newEvents = [newEvent, ...currentEvents].slice(0, 100);
     set({ events: newEvents, _event_counter: counter + 1 });
   },
@@ -99,16 +102,14 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
   reset: () => {
     set({
       ...INITIAL_SIMULATION_STATE,
-      reactor_state: INITIAL_REACTOR_STATE,
       metrics: INITIAL_METRICS,
+      history: [],
+      current_reward: 0,
       _event_counter: 0,
     });
   },
 }));
 
-/**
- * Custom hook for easier access to store methods
- */
 export function useSimulation() {
   return useSimulationStore();
 }

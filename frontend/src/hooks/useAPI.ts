@@ -98,10 +98,14 @@ export function useBackendHealth() {
       }
     };
 
-    checkHealth();
-    const interval = setInterval(checkHealth, 5000); // Check every 5 seconds
+    // Wait a moment for port discovery to complete before first health check
+    const initialDelay = setTimeout(checkHealth, 2000);
+    const interval = setInterval(checkHealth, 8000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initialDelay);
+      clearInterval(interval);
+    };
   }, []);
 
   return { isHealthy, isChecking };
@@ -129,6 +133,7 @@ export function useSimulationControl() {
         store.setCurrentModel(modelId);
         store.setCurrentScenario(scenarioId);
         store.setReactorState(response.reactor_state);
+        store.clearHistory();
         store.setIsRunning(true);
         store.clearEvents();
 
@@ -168,8 +173,9 @@ export function useSimulationControl() {
       }
 
       store.setReactorState(response.reactor_state);
+      store.addStateToHistory(response.reactor_state);
       store.setEpisodeStep(response.episode_step || store.episode_step + 1);
-      
+
       // Save the AI's control action - ONLY log on significant changes (every 5 steps)
       if (response.action && response.episode_step % 5 === 0) {
         store.setLastAction(response.action);
@@ -188,7 +194,7 @@ export function useSimulationControl() {
       // Check for critical conditions - ONLY log on status CHANGE, not every step
       const isCritical = response.reactor_state.fuel_temp > 900;
       const currentStatus = isCritical ? "critical" : "safe";
-      
+
       if (lastCriticalTempStatus !== currentStatus) {
         setLastCriticalTempStatus(currentStatus);
         if (isCritical) {
@@ -216,7 +222,7 @@ export function useSimulationControl() {
           message: "Simulation episode completed - retrieving metrics...",
           icon: "check",
         });
-        
+
         // Get final metrics
         try {
           const summary = await apiClient.stopSimulation();
@@ -242,7 +248,7 @@ export function useSimulationControl() {
         message: errorMsg,
         error: error instanceof Error ? error.stack : String(error),
       });
-      
+
       // If polling is active, we still want to continue trying
       // Only stop on critical errors
       if (error instanceof Error && error.message.includes("Invalid response from stepSimulation")) {
@@ -254,7 +260,7 @@ export function useSimulationControl() {
           icon: "alert-circle",
         });
       }
-      
+
       // Log the error but don't crash polling
       console.error("[stepSimulation] Error details:", { errorMsg, error });
       throw error;
@@ -267,6 +273,7 @@ export function useSimulationControl() {
         const response = await apiClient.manualAction(action);
 
         store.setReactorState(response.reactor_state);
+        store.addStateToHistory(response.reactor_state);
         store.setEpisodeStep(response.episode_step || store.episode_step + 1);
 
         store.addEvent({
@@ -295,7 +302,7 @@ export function useSimulationControl() {
       const summary = await apiClient.stopSimulation();
 
       store.setIsRunning(false);
-      
+
       // Save metrics for scenario summary
       store.setMetrics({
         total_reward: summary?.total_reward || 0,
@@ -307,7 +314,7 @@ export function useSimulationControl() {
         power_change_rate: 0, // Not returned from backend
         safety_events: 0, // Not returned from backend
       });
-      
+
       store.addEvent({
         timestamp: summary?.episode_duration || 0,
         type: "success",
@@ -380,11 +387,13 @@ export function useWebSocketSimulation(isEnabled: boolean) {
       try {
         // Dynamically import socket.io-client
         const { io } = await import("socket.io-client");
-        
-        const socketURL = `http://${window.location.hostname}:${window.location.port === "3000" ? "8000" : window.location.port}`;
-        
+
+        // Use the same port that apiClient discovered — avoids hardcoding 8000
+        const apiBase = apiClient.getBaseURL(); // e.g. "http://localhost:5000/api"
+        const socketURL = apiBase.replace('/api', '');
+
         console.log("[Socket.IO] Attempting to connect to:", socketURL);
-        
+
         // Create Socket.IO connection
         socket = io(socketURL, {
           path: "/api/ws",
@@ -424,6 +433,7 @@ export function useWebSocketSimulation(isEnabled: boolean) {
               // Update reactor state
               if (data.reactor_state) {
                 store.setReactorState(data.reactor_state);
+                store.addStateToHistory(data.reactor_state);
               }
 
               // Update step count
@@ -560,13 +570,13 @@ export function useAutoStep(isAutoStepping: boolean, interval: number = 100) {
       try {
         stepCount++;
         console.log(`[AutoStep] Poll attempt #${stepCount}, store running: ${store.is_running}`);
-        
+
         if (!store.is_running) {
           console.log("[AutoStep] Simulation stopped, clearing polling interval");
           clearInterval(timer);
           return;
         }
-        
+
         await stepSimulation();
       } catch (error) {
         console.error("[AutoStep] Failed:", error instanceof Error ? error.message : String(error));
