@@ -127,6 +127,7 @@ export function useSimulationControl() {
         store.setCurrentScenario(scenarioId);
         store.setReactorState(response.reactor_state);
         store.clearHistory();
+        store.setCurrentReward(0);   // reset accumulated reward for new episode
         store.setIsRunning(true);
         store.clearEvents();
 
@@ -214,14 +215,16 @@ export function useSimulationControl() {
         // Try stopSimulation to get full backend summary, but don't crash if backend
         // already marked the run finished (returns 400 when is_running=False)
         try {
-          const summary = await apiClient.stopSimulation();
+          // Backend returns: { data: { summary: {...fields...}, step: N } }
+          const stopResp = await apiClient.stopSimulation() as unknown as { summary: Record<string, number>; step: number };
+          const s = stopResp?.summary ?? {};
           store.setMetrics({
-            total_reward: summary?.total_reward ?? newReward,
-            episode_steps: summary?.episode_steps ?? response.episode_step,
-            episode_duration: summary?.episode_duration ?? response.reactor_state.time,
-            max_fuel_temp: summary?.max_fuel_temp ?? response.reactor_state.fuel_temp,
-            max_coolant_temp: summary?.max_coolant_temp ?? response.reactor_state.coolant_temp,
-            avg_pressure: summary?.avg_pressure ?? response.reactor_state.pressure,
+            total_reward: typeof s.total_reward === 'number' ? s.total_reward : newReward,
+            episode_steps: typeof s.episode_steps === 'number' ? s.episode_steps : response.episode_step,
+            episode_duration: typeof s.episode_duration === 'number' ? s.episode_duration : response.reactor_state.time,
+            max_fuel_temp: typeof s.max_fuel_temp === 'number' ? s.max_fuel_temp : response.reactor_state.fuel_temp,
+            max_coolant_temp: typeof s.max_coolant_temp === 'number' ? s.max_coolant_temp : response.reactor_state.coolant_temp,
+            avg_pressure: typeof s.avg_pressure === 'number' ? s.avg_pressure : response.reactor_state.pressure,
             power_change_rate: 0,
             safety_events: 0,
           });
@@ -297,33 +300,32 @@ export function useSimulationControl() {
 
   const stopSimulation = useCallback(async () => {
     try {
-      const summary = await apiClient.stopSimulation();
+      const resp = await apiClient.stopSimulation();
+      // resp = { summary: { total_reward, episode_steps, ... }, step: N }
+      const s = resp?.summary ?? {};
 
       store.setIsRunning(false);
-
-      // Save metrics for scenario summary
       store.setMetrics({
-        total_reward: summary?.total_reward || 0,
-        episode_steps: summary?.episode_steps || 0,
-        episode_duration: summary?.episode_duration || 0,
-        max_fuel_temp: summary?.max_fuel_temp || 0,
-        max_coolant_temp: summary?.max_coolant_temp || 0,
-        avg_pressure: summary?.avg_pressure || 0,
-        power_change_rate: 0, // Not returned from backend
-        safety_events: 0, // Not returned from backend
+        total_reward: s.total_reward ?? store.current_reward ?? 0,
+        episode_steps: s.episode_steps ?? store.episode_step ?? 0,
+        episode_duration: s.episode_duration ?? 0,
+        max_fuel_temp: s.max_fuel_temp ?? 0,
+        max_coolant_temp: s.max_coolant_temp ?? 0,
+        avg_pressure: s.avg_pressure ?? 0,
+        power_change_rate: 0,
+        safety_events: 0,
       });
 
       store.addEvent({
-        timestamp: summary?.episode_duration || 0,
+        timestamp: s.episode_duration ?? 0,
         type: "success",
-        message: `Simulation stopped. Reward: ${(summary?.total_reward || 0).toFixed(2)}`,
+        message: `Simulation stopped — reward: ${(s.total_reward ?? 0).toFixed(2)}, steps: ${resp?.step ?? store.episode_step}`,
         icon: "square",
       });
 
-      return summary;
+      return resp;
     } catch (error) {
       const errorMsg = getErrorMessage(error);
-      console.error("Stop simulation error:", errorMsg);
       store.setErrorMessage(errorMsg);
       throw error;
     }
