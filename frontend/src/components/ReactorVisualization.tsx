@@ -100,39 +100,40 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
     }
     lastTimeRef.current = timestamp;
 
-    // Flow direction: positive coolantFlow = boost (particles go up faster)
-    //                 negative coolantFlow = reduce (particles go up slower or reverse)
-    const flowBoost = coolantFlow;              // -1 to +1
-    const baseSpeed = isRunning ? 1.5 : 0.4;
-    const speedMult = 1 + flowBoost;            // 0 (reduce) to 2 (boost)
-    const goingUp = flowBoost >= -0.3;        // reverse if heavily reducing
+    // Coolant always flows upward in a PWR (bottom → top through core)
+    // coolantFlow action:  positive = boost flow (faster, more)
+    //                      negative = reduce flow (slower, fewer)
+    // Scale action (±0.1 typical) to visible effect
+    const flowEffect = Math.max(-1, Math.min(1, coolantFlow * 10)); // amplify small actions
+    const baseSpeed = isRunning ? 1.8 : 0.0;                        // STOP when not running
+    const speedMult = 1 + flowEffect * 0.6;                         // 0.4–1.6×
     const spawnRate = isRunning
-      ? Math.max(0.05, 0.5 + flowBoost * 0.4)    // more particles = high flow
-      : 0.08;
+      ? Math.max(0.08, 0.45 + flowEffect * 0.35)   // 0.08–0.80
+      : 0;                                           // NO new particles when stopped
 
     setParticles(prev => {
       let updated = prev
         .map(p => ({
           ...p,
-          y: p.goingUp
-            ? p.y - p.speed * baseSpeed * speedMult
-            : p.y + p.speed * baseSpeed * 0.5,   // slow drift down when reducing
-          opacity: (p.goingUp ? p.y < 90 : p.y > 265)
-            ? p.opacity - 0.06
-            : p.opacity,
+          y: p.y - p.speed * baseSpeed * speedMult,
+          // Fade out normally at top; fade FAST when simulation stopped
+          opacity: p.y < 88
+            ? p.opacity - 0.08
+            : isRunning
+              ? p.opacity                 // hold opacity while running
+              : p.opacity - 0.06,         // drain opacity quickly when stopped
         }))
-        .filter(p => p.opacity > 0.05 && p.y > 55 && p.y < 285);
+        .filter(p => p.opacity > 0.04 && p.y > 55 && p.y < 285);
 
       if (Math.random() < spawnRate && updated.length < 35) {
         const colX = COOLANT_COLUMNS[Math.floor(Math.random() * COOLANT_COLUMNS.length)];
         updated.push({
           id: particleIdRef.current++,
           x: colX + (Math.random() - 0.5) * 10,
-          // spawn from bottom when flowing up, from top when reversing
-          y: goingUp ? 248 + Math.random() * 15 : 75 + Math.random() * 15,
-          opacity: 0.5 + Math.random() * 0.5,
-          speed: 0.9 + Math.random() * 0.8,
-          goingUp,
+          y: 252 + Math.random() * 12,   // always spawn from bottom inlet
+          opacity: 0.55 + Math.random() * 0.4,
+          speed: 0.8 + Math.random() * 0.7,
+          goingUp: true,
         });
       }
 

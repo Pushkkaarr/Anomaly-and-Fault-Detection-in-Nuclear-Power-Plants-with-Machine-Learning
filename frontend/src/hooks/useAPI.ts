@@ -554,31 +554,35 @@ export function useAutoStep(isAutoStepping: boolean, interval: number = 100) {
   const { wsConnected, wsError } = useWebSocketSimulation(isAutoStepping && store.is_running);
 
   useEffect(() => {
-    // Don't poll if: not enabled, not running, or WS is covering real-time updates
     if (!isAutoStepping || !store.is_running || wsConnected) return;
 
     let consecutiveErrors = 0;
-    const MAX_ERRORS = 3; // Stop polling after 3 back-to-back 400s
+    const MAX_ERRORS = 3;
+    let isPolling = false; // mutex: prevents concurrent overlapping requests
 
     const timer = setInterval(async () => {
-      // ✅ Read CURRENT store state — avoids stale React closure
-      const isCurrentlyRunning = useSimulationStore.getState().is_running;
-
-      if (!isCurrentlyRunning) {
+      // Always read current store state — avoids stale closure
+      if (!useSimulationStore.getState().is_running) {
         clearInterval(timer);
         return;
       }
 
+      // Skip this tick if the previous request is still in-flight
+      // This is the main cause of 10+ consecutive 400s
+      if (isPolling) return;
+
+      isPolling = true;
       try {
         await stepSimulation();
-        consecutiveErrors = 0; // Reset on success
-      } catch (error) {
+        consecutiveErrors = 0;
+      } catch {
         consecutiveErrors++;
         if (consecutiveErrors >= MAX_ERRORS) {
-          // Backend says simulation not running — stop polling
           useSimulationStore.getState().setIsRunning(false);
           clearInterval(timer);
         }
+      } finally {
+        isPolling = false;
       }
     }, interval);
 
