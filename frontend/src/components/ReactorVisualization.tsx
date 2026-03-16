@@ -93,59 +93,65 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
   const lastTimeRef = useRef<number>(0);
   const particleIdRef = useRef(0);
 
-  const animateParticles = useCallback((timestamp: number) => {
-    if (timestamp - lastTimeRef.current < 40) {
-      animFrameRef.current = requestAnimationFrame(animateParticles);
-      return;
-    }
-    lastTimeRef.current = timestamp;
-
-    // Coolant always flows upward in a PWR (bottom → top through core)
-    // coolantFlow action:  positive = boost flow (faster, more)
-    //                      negative = reduce flow (slower, fewer)
-    // Scale action (±0.1 typical) to visible effect
-    const flowEffect = Math.max(-1, Math.min(1, coolantFlow * 10)); // amplify small actions
-    const baseSpeed = isRunning ? 1.8 : 0.0;                        // STOP when not running
-    const speedMult = 1 + flowEffect * 0.6;                         // 0.4–1.6×
-    const spawnRate = isRunning
-      ? Math.max(0.08, 0.45 + flowEffect * 0.35)   // 0.08–0.80
-      : 0;                                           // NO new particles when stopped
-
-    setParticles(prev => {
-      let updated = prev
-        .map(p => ({
-          ...p,
-          y: p.y - p.speed * baseSpeed * speedMult,
-          // Fade out normally at top; fade FAST when simulation stopped
-          opacity: p.y < 88
-            ? p.opacity - 0.08
-            : isRunning
-              ? p.opacity                 // hold opacity while running
-              : p.opacity - 0.06,         // drain opacity quickly when stopped
-        }))
-        .filter(p => p.opacity > 0.04 && p.y > 55 && p.y < 285);
-
-      if (Math.random() < spawnRate && updated.length < 35) {
-        const colX = COOLANT_COLUMNS[Math.floor(Math.random() * COOLANT_COLUMNS.length)];
-        updated.push({
-          id: particleIdRef.current++,
-          x: colX + (Math.random() - 0.5) * 10,
-          y: 252 + Math.random() * 12,   // always spawn from bottom inlet
-          opacity: 0.55 + Math.random() * 0.4,
-          speed: 0.8 + Math.random() * 0.7,
-          goingUp: true,
-        });
+  const animateParticles = useCallback(
+    (timestamp: number) => {
+      if (timestamp - lastTimeRef.current < 30) {
+        animFrameRef.current = requestAnimationFrame(animateParticles);
+        return;
       }
+      lastTimeRef.current = timestamp;
 
-      return updated;
-    });
+      // Coolant always flows upward in a PWR (bottom → top through core)
+      // coolantFlow action:  positive = boost flow (faster, more)
+      //                      negative = reduce flow (slower, fewer)
+      // We amplify the visual effect of small AI actions (e.g., 0.05 -> 0.6 boost)
+      const flowEffect = Math.max(-1, Math.min(1, coolantFlow * 12));
+      const baseSpeed = isRunning ? 2.2 : 0.0;
+      const speedMult = 1 + flowEffect * 0.85; // 0.15x to 1.85x variation
+      const spawnChance = isRunning
+        ? Math.max(0.1, 0.55 + flowEffect * 0.4) // 0.15 to 0.95
+        : 0;
 
-    animFrameRef.current = requestAnimationFrame(animateParticles);
-  }, [coolantFlow, isRunning]);
+      setParticles((prev) => {
+        let updated = prev
+          .map((p) => ({
+            ...p,
+            y: p.y - p.speed * baseSpeed * speedMult,
+            // Fade out normally at top; fade FAST when simulation stopped
+            opacity:
+              p.y < 88
+                ? p.opacity - 0.1
+                : isRunning
+                ? p.opacity // hold opacity while running
+                : p.opacity - 0.08, // drain opacity quickly when stopped
+          }))
+          .filter((p) => p.opacity > 0.04 && p.y > 50 && p.y < 290);
+
+        if (Math.random() < spawnChance && updated.length < 45) {
+          const colX = COOLANT_COLUMNS[Math.floor(Math.random() * COOLANT_COLUMNS.length)];
+          updated.push({
+            id: particleIdRef.current++,
+            x: colX + (Math.random() - 0.5) * 12,
+            y: 255 + Math.random() * 10,
+            opacity: 0.6 + Math.random() * 0.4,
+            speed: 0.8 + Math.random() * 1.0,
+            goingUp: true,
+          });
+        }
+
+        return updated;
+      });
+
+      animFrameRef.current = requestAnimationFrame(animateParticles);
+    },
+    [coolantFlow, isRunning]
+  );
 
   useEffect(() => {
     animFrameRef.current = requestAnimationFrame(animateParticles);
-    return () => { if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current); };
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
   }, [animateParticles]);
 
   // ── Idle / offline screen ───────────────────────────────────────────
@@ -165,43 +171,46 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
     );
   }
 
-  const fuelTempPercent = Math.min(state.fuel_temp / 1150, 1);
+  const fuelTempPercent = Math.min(state.fuel_temp / 1300, 1);
   const isCritical = state.fuel_temp > 1100;
   const isWarning = state.fuel_temp > 950 && !isCritical;
-  const glowRadius = 45 + fuelTempPercent * 35;
+  const glowRadius = 45 + fuelTempPercent * 45;
 
   // Rod action indicator label
-  const rodLabel = rodPosition > 0.01 ? `↓ INSERT +${rodPosition.toFixed(3)}`
-    : rodPosition < -0.01 ? `↑ WITHDRAW ${rodPosition.toFixed(3)}`
-      : "HOLD";
-  const rodLabelColor = rodPosition > 0.01 ? "#ff5252"
-    : rodPosition < -0.01 ? "#40c4ff"
-      : "#ffd600";
+  const rodLabel =
+    rodPosition > 0.005
+      ? `↓ INSERT +${rodPosition.toFixed(4)}`
+      : rodPosition < -0.005
+      ? `↑ WITHDRAW ${rodPosition.toFixed(4)}`
+      : "STABLE";
+  const rodLabelColor =
+    rodPosition > 0.005 ? "#ff5252" : rodPosition < -0.005 ? "#40c4ff" : "#ffd600";
 
   // Coolant action label
-  const flowLabel = coolantFlow > 0.01 ? `↑ BOOST +${coolantFlow.toFixed(3)}`
-    : coolantFlow < -0.01 ? `↓ REDUCE ${coolantFlow.toFixed(3)}`
-      : "NOMINAL";
-  const flowColor = coolantFlow > 0.01 ? "#00e676"
-    : coolantFlow < -0.01 ? "#ffd600"
-      : "#40c4ff";
+  const flowLabel =
+    coolantFlow > 0.005
+      ? `↑ BOOST +${coolantFlow.toFixed(4)}`
+      : coolantFlow < -0.005
+      ? `↓ REDUCE ${coolantFlow.toFixed(4)}`
+      : "STEADY";
+  const flowColor =
+    coolantFlow > 0.005 ? "#00e676" : coolantFlow < -0.005 ? "#ffd600" : "#40c4ff";
 
-  // Coolant flow line speed & opacity based on action
-  const flowLineOpacity = 0.08 + Math.abs(coolantFlow) * 0.35;
-  const flowLineDuration = Math.max(0.4, 2.5 - Math.abs(coolantFlow) * 2);
+  // Coolant flow line animation speed & opacity
+  const flowLineOpacity = 0.1 + Math.abs(coolantFlow) * 0.45;
+  const flowLineDuration = Math.max(0.35, 2.2 - Math.abs(coolantFlow) * 2);
 
   return (
     <div
-      className="relative rounded-lg overflow-hidden"
+      className="relative rounded-lg overflow-hidden transition-all duration-300"
       style={{
-        background: "rgba(2, 8, 18, 0.95)",
-        border: `1px solid ${isCritical ? "rgba(255,59,59,0.6)" : "rgba(0,212,255,0.15)"}`,
+        background: "rgba(2, 8, 18, 0.98)",
+        border: `1px solid ${isCritical ? "rgba(255,59,59,0.7)" : "rgba(0,212,255,0.2)"}`,
         boxShadow: isCritical
-          ? "0 0 20px rgba(255,59,59,0.3), inset 0 0 20px rgba(255,59,59,0.05)"
-          : "0 0 10px rgba(0,212,255,0.08)",
+          ? "0 0 30px rgba(255,59,59,0.4), inset 0 0 20px rgba(255,59,59,0.1)"
+          : "0 0 15px rgba(0,212,255,0.1)",
         animationName: isCritical ? "critical-pulse" : "none",
-        animationDuration: "1.2s",
-        animationTimingFunction: "ease-in-out",
+        animationDuration: "1s",
         animationIterationCount: "infinite",
       }}
     >

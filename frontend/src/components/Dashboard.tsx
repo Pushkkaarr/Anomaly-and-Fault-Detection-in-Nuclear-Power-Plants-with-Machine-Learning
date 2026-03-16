@@ -370,11 +370,35 @@ export const Dashboard: React.FC = () => {
               </div>
             )}
 
-            {/* Post-simulation metrics */}
+            {/* Post-simulation metrics - "Final Report" style */}
             {!store.is_running && store.metrics && store.metrics.episode_steps > 0 && (
-              <div className="nuclear-panel p-4">
-                <p className="section-label mb-3">Session Summary</p>
-                <MetricsSummary metrics={store.metrics} isRunning={false} />
+              <div className="nuclear-panel p-4 border-2 border-[#00d4ff]/30 animate-in fade-in zoom-in duration-500">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="h-5 w-1 bg-[#00d4ff]" />
+                  <p className="text-xs font-bold tracking-widest uppercase text-[#00d4ff]">
+                    Final Reactor Deployment Report
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <div className="bg-black/40 rounded-lg p-3 border border-white/5">
+                    <p className="text-[0.6rem] uppercase text-white/30 mb-2">Primary Objective Status</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold text-white/90">
+                        {store.metrics.total_reward > 0 ? "✓ SUCCESSFUL STABILIZATION" : "❌ SYSTEM INSTABILITY"}
+                      </span>
+                      <span className="text-xs font-mono text-[#00e676]">
+                        SCORE: {store.metrics.total_reward.toFixed(1)}
+                      </span>
+                    </div>
+                  </div>
+                  <MetricsSummary metrics={store.metrics} isRunning={false} />
+                  <button 
+                    onClick={() => store.reset()}
+                    className="w-full py-2 text-[0.6rem] uppercase tracking-widest font-bold border border-white/10 rounded hover:bg-white/5 transition-colors"
+                  >
+                    Acknowledge & Dismiss
+                  </button>
+                </div>
               </div>
             )}
 
@@ -444,56 +468,72 @@ export const Dashboard: React.FC = () => {
 
             {/* AI Action Display */}
             {store.is_running && store.last_action && (
-              <div className="nuclear-panel p-4">
-                <p className="section-label mb-3">🤖 AI Decision (SAC Agent)</p>
-                <div className="grid grid-cols-2 gap-4">
+              <div className="nuclear-panel p-4 border border-[#00d4ff]/20 bg-[#00d4ff]/05">
+                <div className="flex items-center justify-between mb-4">
+                  <p className="section-label">🤖 AI Decision Engine (SAC)</p>
+                  <span className="text-[0.6rem] font-mono text-[#00d4ff]/60 animate-pulse">
+                    ANALYZING...
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 mb-4">
                   {/* Rod position bar */}
                   <div>
-                    <div className="flex justify-between text-xs mb-1.5">
-                      <span style={{ color: "rgba(107,143,168,0.7)" }}>Control Rod</span>
+                    <div className="flex justify-between text-[0.65rem] mb-1.5 uppercase font-medium">
+                      <span style={{ color: "rgba(107,143,168,0.7)" }}>Rod Delta</span>
                       <span
                         className="font-mono font-bold"
                         style={{ color: Math.abs(store.last_action.control_rod) > 0.3 ? "#ff6b6b" : "#00d4ff" }}
                       >
-                        {store.last_action.control_rod > 0 ? "↓ INSERT " : store.last_action.control_rod < 0 ? "↑ WITHDRAW " : "HOLD "}
-                        {store.last_action.control_rod.toFixed(4)}
+                        {store.last_action.control_rod > 0.005 ? "↓ INSERT" : store.last_action.control_rod < -0.005 ? "↑ WITHDRAW" : "HOLD"}
                       </span>
                     </div>
-                    <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+                    <div className="h-1.5 rounded-full overflow-hidden bg-white/5">
                       <div
-                        className="h-full rounded-full transition-all duration-200"
+                        className="h-full rounded-full transition-all duration-300"
                         style={{
-                          width: `${Math.abs(store.last_action.control_rod) * 100}%`,
-                          marginLeft: store.last_action.control_rod < 0 ? `${(1 + store.last_action.control_rod) * 50}%` : "50%",
-                          background: store.last_action.control_rod > 0.3 ? "#ff5252" : store.last_action.control_rod < -0.3 ? "#40c4ff" : "#ffd600",
+                          width: `${Math.min(100, Math.abs(store.last_action.control_rod) * 200)}%`,
+                          marginLeft: store.last_action.control_rod < 0 ? "auto" : "0",
+                          background: store.last_action.control_rod > 0.005 ? "#ff5252" : store.last_action.control_rod < -0.005 ? "#40c4ff" : "#ffd600",
+                          boxShadow: `0 0 8px ${store.last_action.control_rod > 0.005 ? "#ff525280" : "#40c4ff80"}`,
                         }}
                       />
                     </div>
                   </div>
                   {/* Coolant flow bar */}
                   <div>
-                    <div className="flex justify-between text-xs mb-1.5">
-                      <span style={{ color: "rgba(107,143,168,0.7)" }}>Coolant Flow</span>
+                    <div className="flex justify-between text-[0.65rem] mb-1.5 uppercase font-medium">
+                      <span style={{ color: "rgba(107,143,168,0.7)" }}>Flow Adjust</span>
                       <span
                         className="font-mono font-bold"
-                        style={{ color: "#40c4ff" }}
+                        style={{ color: "#00e676" }}
                       >
-                        {store.last_action.coolant_flow > 0 ? "+↑ " : "-↓ "}
-                        {store.last_action.coolant_flow.toFixed(4)}
+                        {store.last_action.coolant_flow > 0.005 ? "+ BOOST" : store.last_action.coolant_flow < -0.005 ? "- REDUCE" : "STEADY"}
                       </span>
                     </div>
-                    <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.06)" }}>
+                    <div className="h-1.5 rounded-full overflow-hidden bg-white/5">
                       <div
-                        className="h-full rounded-full transition-all duration-200"
+                        className="h-full rounded-full transition-all duration-300"
                         style={{
-                          width: `${Math.abs(store.last_action.coolant_flow) * 100}%`,
-                          marginLeft: store.last_action.coolant_flow > 0 ? "50%" : `${(1 + store.last_action.coolant_flow) * 50}%`,
-                          background: "#40c4ff",
-                          boxShadow: "0 0 6px rgba(64,196,255,0.5)",
+                          width: `${Math.min(100, Math.abs(store.last_action.coolant_flow) * 200)}%`,
+                          marginLeft: store.last_action.coolant_flow < 0 ? "auto" : "0",
+                          background: "#00e676",
+                          boxShadow: "0 0 8px rgba(0,230,118,0.4)",
                         }}
                       />
                     </div>
                   </div>
+                </div>
+
+                <div className="pt-3 border-t border-white/5">
+                  <p className="text-[0.6rem] uppercase tracking-wider text-white/30 mb-1">Controller Intent</p>
+                  <p className="text-xs font-medium text-[#a0d8e8] leading-snug">
+                    {store.last_action.control_rod > 0.01 ? "Inserting rods to dampen fission reactivity and control rising core heat." :
+                     store.last_action.control_rod < -0.01 ? "Withdrawing rods to increase thermal neutrons and boost power output." :
+                     store.last_action.coolant_flow > 0.01 ? "Increasing secondary flow to maximize heat transfer and optimize cooling." :
+                     store.last_action.coolant_flow < -0.01 ? "Reducing coolant throughput to maintain hydraulic pressure stability." :
+                     "Maintaining steady-state reactor equilibrium and monitoring telemetry."}
+                  </p>
                 </div>
               </div>
             )}
