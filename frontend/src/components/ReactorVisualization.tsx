@@ -205,7 +205,7 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
 
   return (
     <div
-      className="relative rounded-lg overflow-hidden transition-all duration-300"
+      className="relative rounded-lg overflow-hidden"
       style={{
         background: "rgba(1, 4, 10, 0.98)",
         border: `1px solid ${isCritical ? "rgba(255,59,59,0.7)" : "rgba(0,212,255,0.25)"}`,
@@ -215,6 +215,9 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
         animationName: isCritical ? "critical-pulse" : "none",
         animationDuration: "0.8s",
         animationIterationCount: "infinite",
+        transitionProperty: "background, border-color, box-shadow",
+        transitionDuration: "300ms",
+        transitionTimingFunction: "ease",
       }}
     >
       {/* ── MISSION COMPLETE OVERLAY ── */}
@@ -293,7 +296,9 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
         <rect x="72" y="65" width="256" height="196" rx="12" ry="12"
           fill={bulkFluidColor}
           style={{ 
-            transition: "fill 0.5s ease", 
+            transitionProperty: "fill",
+            transitionDuration: "0.5s",
+            transitionTimingFunction: "ease",
             animationName: isRunning ? "fluid-pulse" : "none",
             animationDuration: "4s",
             animationTimingFunction: "ease-in-out",
@@ -424,7 +429,9 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
             width={Math.min(220, 220 * (state.power / 1.5))} height="10" rx="5"
             fill={state.power > 1.2 ? "#ff3b3b" : state.power > 0.8 ? "#00e676" : "#ffd600"}
             style={{ 
-              transition: "width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+              transitionProperty: "width",
+              transitionDuration: "0.4s",
+              transitionTimingFunction: "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
               filter: `drop-shadow(0 0 8px ${state.power > 1.2 ? "#ff3b3b" : state.power > 0.8 ? "#00e676" : "#ffd600"})`
             }}
           />
@@ -446,7 +453,14 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
             style={{ borderRight: i < 3 ? "1px solid rgba(0,212,255,0.06)" : "none" }}>
             <span className="section-label" style={{ fontSize: "0.55rem" }}>{item.label}</span>
             <span className="font-mono font-bold mt-0.5"
-              style={{ color: item.color, fontSize: "0.75rem", textShadow: `0 0 8px ${item.color}60`, transition: "color 0.3s ease" }}>
+              style={{ 
+                color: item.color, 
+                fontSize: "0.75rem", 
+                textShadow: `0 0 8px ${item.color}60`, 
+                transitionProperty: "color",
+                transitionDuration: "0.3s",
+                transitionTimingFunction: "ease"
+              }}>
               {item.value}
             </span>
           </div>

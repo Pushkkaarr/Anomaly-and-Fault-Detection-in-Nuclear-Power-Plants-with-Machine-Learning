@@ -35,7 +35,13 @@ const LoadingScreen = () => (
     <div className="text-center">
       <div
         className="text-6xl mb-6"
-        style={{ animation: "reactor-spin 3s linear infinite", display: "inline-block" }}
+        style={{
+          animationName: "reactor-spin",
+          animationDuration: "3s",
+          animationTimingFunction: "linear",
+          animationIterationCount: "infinite",
+          display: "inline-block"
+        }}
       >
         ⚛️
       </div>
@@ -181,7 +187,10 @@ export const Dashboard: React.FC = () => {
               className="text-2xl"
               style={{
                 filter: "drop-shadow(0 0 8px rgba(0,212,255,0.6))",
-                animation: store.is_running ? "reactor-spin 8s linear infinite" : "none",
+                animationName: store.is_running ? "reactor-spin" : "none",
+                animationDuration: "8s",
+                animationTimingFunction: "linear",
+                animationIterationCount: "infinite",
               }}
             >
               ☢
@@ -258,7 +267,10 @@ export const Dashboard: React.FC = () => {
             background: "rgba(255,59,59,0.15)",
             borderBottom: "2px solid rgba(255,59,59,0.8)",
             color: "#ff6b6b",
-            animation: "critical-pulse 1s ease-in-out infinite",
+            animationName: "critical-pulse",
+            animationDuration: "1s",
+            animationTimingFunction: "ease-in-out",
+            animationIterationCount: "infinite",
           }}
         >
           🔥 CRITICAL: Fuel Temperature {state?.fuel_temp.toFixed(0)}K — EXCEEDS 1100K SAFETY LIMIT
@@ -372,7 +384,15 @@ export const Dashboard: React.FC = () => {
 
             {/* Post-simulation metrics - "Final Report" style */}
             {!store.is_running && store.metrics && store.metrics.episode_steps > 0 && (
-              <div className="nuclear-panel p-4 border-2 border-[#00d4ff]/30 animate-in fade-in zoom-in duration-500">
+              <div 
+                className="nuclear-panel p-4 border-2 border-[#00d4ff]/30"
+                style={{
+                  animationName: "enter",
+                  animationDuration: "500ms",
+                  animationTimingFunction: "ease-out",
+                  animationFillMode: "both"
+                }}
+              >
                 <div className="flex items-center gap-2 mb-4">
                   <div className="h-5 w-1 bg-[#00d4ff]" />
                   <p className="text-xs font-bold tracking-widest uppercase text-[#00d4ff]">
@@ -392,7 +412,7 @@ export const Dashboard: React.FC = () => {
                     </div>
                   </div>
                   <MetricsSummary metrics={store.metrics} isRunning={false} />
-                  <button 
+                  <button
                     onClick={() => store.reset()}
                     className="w-full py-2 text-[0.6rem] uppercase tracking-widest font-bold border border-white/10 rounded hover:bg-white/5 transition-colors"
                   >
@@ -475,7 +495,7 @@ export const Dashboard: React.FC = () => {
                     ANALYZING...
                   </span>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   {/* Rod position bar */}
                   <div>
@@ -529,10 +549,10 @@ export const Dashboard: React.FC = () => {
                   <p className="text-[0.6rem] uppercase tracking-wider text-white/30 mb-1">Controller Intent</p>
                   <p className="text-xs font-medium text-[#a0d8e8] leading-snug">
                     {store.last_action.control_rod > 0.01 ? "Inserting rods to dampen fission reactivity and control rising core heat." :
-                     store.last_action.control_rod < -0.01 ? "Withdrawing rods to increase thermal neutrons and boost power output." :
-                     store.last_action.coolant_flow > 0.01 ? "Increasing secondary flow to maximize heat transfer and optimize cooling." :
-                     store.last_action.coolant_flow < -0.01 ? "Reducing coolant throughput to maintain hydraulic pressure stability." :
-                     "Maintaining steady-state reactor equilibrium and monitoring telemetry."}
+                      store.last_action.control_rod < -0.01 ? "Withdrawing rods to increase thermal neutrons and boost power output." :
+                        store.last_action.coolant_flow > 0.01 ? "Increasing secondary flow to maximize heat transfer and optimize cooling." :
+                          store.last_action.coolant_flow < -0.01 ? "Reducing coolant throughput to maintain hydraulic pressure stability." :
+                            "Maintaining steady-state reactor equilibrium and monitoring telemetry."}
                   </p>
                 </div>
               </div>
