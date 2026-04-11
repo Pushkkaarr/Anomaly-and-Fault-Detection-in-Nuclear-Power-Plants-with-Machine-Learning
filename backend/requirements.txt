@@ -5,6 +5,7 @@ Werkzeug
 flask-sock
 
 # WebSocket Support
+Flask-SocketIO
 python-socketio
 python-engineio
 
@@ -17,6 +18,7 @@ torchaudio
 numpy
 scipy
 scikit-learn
+tensorflow
 
 # Gymnasium (RL environments)
 gymnasium

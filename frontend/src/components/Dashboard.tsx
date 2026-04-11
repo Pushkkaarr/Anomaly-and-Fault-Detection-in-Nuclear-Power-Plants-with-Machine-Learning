@@ -156,8 +156,17 @@ export const Dashboard: React.FC = () => {
   const canStart = !!selectedModel && !!selectedScenario && !store.is_running;
 
   const state = store.reactor_state;
+  const fault = store.fault_prediction;
   const isCritical = state ? state.fuel_temp > 1100 : false;
   const isWarning = state ? state.fuel_temp > 950 && !isCritical : false;
+  const faultAccent =
+    fault?.risk_level === "critical"
+      ? "#ff6b6b"
+      : fault?.risk_level === "high"
+        ? "#ff9f43"
+        : fault?.risk_level === "medium"
+          ? "#ffd600"
+          : "#00e676";
 
   if (isChecking) return <LoadingScreen />;
   if (!isHealthy) return <OfflineScreen />;
@@ -596,6 +605,13 @@ export const Dashboard: React.FC = () => {
                       pct: Math.min((state.pressure - 5) / 11, 1),
                       color: (state.pressure < 8 || state.pressure > 12) ? "#ffd600" : "#00e676",
                     },
+                    {
+                      label: "Coolant Flow",
+                      value: `${(state.coolant_flow_actual ?? 0).toFixed(0)} kg/s`,
+                      target: "Actual physical flow",
+                      pct: Math.min((state.coolant_flow_actual ?? 0) / 12000, 1),
+                      color: "#40c4ff",
+                    },
                   ].map((item, i) => (
                     <div
                       key={i}
@@ -639,6 +655,116 @@ export const Dashboard: React.FC = () => {
                 </div>
               </div>
             )}
+
+            <div className="nuclear-panel p-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="section-label">LSTM Fault Detector</p>
+                <span
+                  className="text-[0.6rem] font-mono uppercase"
+                  style={{ color: faultAccent }}
+                >
+                  {fault?.status === "prediction_ready"
+                    ? fault.predicted_state
+                    : fault?.status === "error"
+                      ? "Offline"
+                      : "Buffering"}
+                </span>
+              </div>
+
+              {!fault || fault.status === "insufficient_data" ? (
+                <div
+                  className="rounded-lg p-3 text-sm"
+                  style={{
+                    background: "rgba(0,0,0,0.3)",
+                    border: "1px solid rgba(0,212,255,0.08)",
+                    color: "rgba(160,216,232,0.8)",
+                  }}
+                >
+                  {fault?.message ?? "Collecting sequence history for the first LSTM prediction."}
+                </div>
+              ) : fault.status === "error" ? (
+                <div
+                  className="rounded-lg p-3 text-sm"
+                  style={{
+                    background: "rgba(255,59,59,0.08)",
+                    border: "1px solid rgba(255,59,59,0.25)",
+                    color: "#ff9c9c",
+                  }}
+                >
+                  {fault.message ?? "Fault detector unavailable."}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div
+                    className="rounded-lg p-3"
+                    style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${faultAccent}33` }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs uppercase" style={{ color: "rgba(107,143,168,0.7)" }}>
+                        Predicted State
+                      </span>
+                      <span className="font-mono font-bold" style={{ color: faultAccent }}>
+                        {fault.predicted_state}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-2 text-xs">
+                      <span style={{ color: "rgba(107,143,168,0.7)" }}>Confidence</span>
+                      <span style={{ color: "#a0d8e8" }}>
+                        {fault.confidence !== undefined ? `${(fault.confidence * 100).toFixed(1)}%` : "N/A"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between mt-1 text-xs">
+                      <span style={{ color: "rgba(107,143,168,0.7)" }}>Risk Level</span>
+                      <span style={{ color: faultAccent }}>
+                        {(fault.risk_level ?? "low").toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {fault.class_probabilities && (
+                    <div className="space-y-2">
+                      {(["Normal", "Scram", "LOFA"] as const).map((label) => (
+                        <div key={label}>
+                          <div className="flex justify-between text-[0.65rem] mb-1 uppercase font-medium">
+                            <span style={{ color: "rgba(107,143,168,0.7)" }}>{label}</span>
+                            <span className="font-mono" style={{ color: "#a0d8e8" }}>
+                              {(((fault.class_probabilities?.[label] ?? 0) * 100)).toFixed(1)}%
+                            </span>
+                          </div>
+                          <div className="h-1.5 rounded-full overflow-hidden bg-white/5">
+                            <div
+                              className="h-full rounded-full transition-all duration-300"
+                              style={{
+                                width: `${(fault.class_probabilities?.[label] ?? 0) * 100}%`,
+                                background:
+                                  label === "LOFA"
+                                    ? "#ff6b6b"
+                                    : label === "Scram"
+                                      ? "#ffd600"
+                                      : "#00e676",
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {fault.recommendations && fault.recommendations.length > 0 && (
+                    <div
+                      className="rounded-lg p-3 text-xs leading-relaxed"
+                      style={{
+                        background: "rgba(0,0,0,0.25)",
+                        border: "1px solid rgba(255,255,255,0.04)",
+                        color: "#a0d8e8",
+                      }}
+                    >
+                      {fault.recommendations[0]}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Live Graph */}
             <div className="nuclear-panel p-4">

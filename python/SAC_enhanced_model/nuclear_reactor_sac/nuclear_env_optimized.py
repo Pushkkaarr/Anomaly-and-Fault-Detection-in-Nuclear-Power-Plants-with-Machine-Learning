@@ -76,6 +76,7 @@ class NuclearReactorEnv(gym.Env):
         self.t = 0.0
         self.prev_power = 1.0
         self.prev_temp = 1095.0
+        self.current_flow = CONSTANTS['W_nominal']
         self.cumulative_violation_time = 0.0
         self.episode_max_temp = 0.0
         
@@ -106,6 +107,7 @@ class NuclearReactorEnv(gym.Env):
         self.t = 0.0
         self.prev_power = P0
         self.prev_temp = Tf0
+        self.current_flow = CONSTANTS['W_nominal']
         self.cumulative_violation_time = 0.0
         self.episode_max_temp = Tf0
         
@@ -134,6 +136,14 @@ class NuclearReactorEnv(gym.Env):
         
         # Clip actions for safety
         action = np.clip(action, self.action_space.low, self.action_space.high)
+        flow_multiplier = 1.0 + (action[1] * 0.25)
+        self.current_flow = float(
+            np.clip(
+                CONSTANTS['W_nominal'] * flow_multiplier,
+                0.2 * CONSTANTS['W_nominal'],
+                1.5 * CONSTANTS['W_nominal']
+            )
+        )
         
         # ====================================================================
         # PHYSICS INTEGRATION - THE 4 FORMULAS IN ACTION
@@ -210,7 +220,9 @@ class NuclearReactorEnv(gym.Env):
         # TERMINATION CONDITIONS
         # ====================================================================
         terminated = False
-        info = {}
+        info = {
+            'coolant_flow_actual': float(self.current_flow)
+        }
         
         # Critical safety violations
         if Tf_new > 1600.0:

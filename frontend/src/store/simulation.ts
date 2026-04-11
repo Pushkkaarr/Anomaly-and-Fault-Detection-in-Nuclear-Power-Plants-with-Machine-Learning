@@ -5,6 +5,7 @@ import {
   SimulationEvent,
   SimulationMetrics,
   Action,
+  FaultPrediction,
 } from "@/types/reactor";
 
 const INITIAL_SIMULATION_STATE: SimulationState = {
@@ -18,6 +19,7 @@ const INITIAL_SIMULATION_STATE: SimulationState = {
   events: [],
   error_message: null,
   last_action: null,
+  fault_prediction: null,
   _event_counter: 0,
   history: [],
   current_reward: 0,
@@ -45,6 +47,7 @@ interface SimulationStore extends SimulationState {
   setEpisodeStep: (step: number) => void;
   setErrorMessage: (message: string | null) => void;
   setLastAction: (action: Action | null) => void;
+  setFaultPrediction: (prediction: FaultPrediction | null) => void;
   setCurrentReward: (reward: number) => void;
 
   // History for live graph (circular buffer of 80 points)
@@ -72,6 +75,7 @@ export const useSimulationStore = create<SimulationStore>((set, get) => ({
   setEpisodeStep: (step) => set({ episode_step: step }),
   setErrorMessage: (message) => set({ error_message: message }),
   setLastAction: (action) => set({ last_action: action }),
+  setFaultPrediction: (prediction) => set({ fault_prediction: prediction }),
   setCurrentReward: (reward) => set({ current_reward: reward }),
 
   addStateToHistory: (state) => {

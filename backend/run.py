@@ -15,6 +15,7 @@ from backend.main import create_app
 
 if __name__ == '__main__':
     app = create_app(config_name="development")
+    from backend.api.websocket_handler import socketio
     
     print("=" * 70)
     print("Nuclear Reactor Control Backend - Starting")
@@ -23,9 +24,11 @@ if __name__ == '__main__':
     print("API Documentation: http://localhost:8000/api/status")
     print("=" * 70)
     
-    app.run(
+    socketio.run(
+        app,
         host='0.0.0.0',
         port=8000,
         debug=True,
-        use_reloader=True
+        use_reloader=False,
+        allow_unsafe_werkzeug=True
     )

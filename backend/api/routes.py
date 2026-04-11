@@ -8,6 +8,7 @@ from flask import Blueprint, request, jsonify
 import numpy as np
 
 from backend.core.model_manager import ModelManager
+from backend.core.lstm_fault_detector import FaultDetectionManager
 from backend.core.reactor_physics import ReactorEnvironmentWrapper
 from backend.api.responses import ResponseFormatter
 from backend.api.websocket_handler import broadcast_simulation_state
@@ -27,9 +28,26 @@ _simulation_state = {
     "current_model": None,
     "environment": None,
     "current_state": None,
+    "fault_prediction": None,
     "episode_step": 0,
     "is_running": False
 }
+
+
+def _safe_reset_fault_detector(initial_state=None):
+    try:
+        return FaultDetectionManager().reset(initial_state=initial_state)
+    except Exception as e:
+        logger.error(f"Failed to reset LSTM fault detector: {e}")
+        return FaultDetectionManager().get_error_response()
+
+
+def _safe_update_fault_detector(state):
+    try:
+        return FaultDetectionManager().update(state)
+    except Exception as e:
+        logger.error(f"Failed to update LSTM fault detector: {e}")
+        return FaultDetectionManager().get_error_response()
 
 
 # ============================================================================
@@ -188,6 +206,7 @@ def reset_simulation():
         initial_state = env.reset()
         
         _simulation_state["current_state"] = initial_state
+        _simulation_state["fault_prediction"] = _safe_reset_fault_detector(initial_state)
         _simulation_state["episode_step"] = 0
         _simulation_state["is_running"] = False
         
@@ -196,6 +215,7 @@ def reset_simulation():
         return jsonify(ResponseFormatter.success(
             data={
                 "reactor_state": initial_state,
+                "fault_prediction": _simulation_state["fault_prediction"],
                 "episode_step": 0,
                 "is_running": False,
                 "message": "Simulation reset successfully"
@@ -262,6 +282,7 @@ def start_simulation():
         # Reset environment
         initial_state = env.reset()
         _simulation_state["current_state"] = initial_state
+        _simulation_state["fault_prediction"] = _safe_reset_fault_detector(initial_state)
         _simulation_state["episode_step"] = 0
         _simulation_state["is_running"] = True
         
@@ -270,6 +291,7 @@ def start_simulation():
         return jsonify(ResponseFormatter.success(
             data={
                 "reactor_state": initial_state,
+                "fault_prediction": _simulation_state["fault_prediction"],
                 "episode_step": 0,
                 "is_running": True,
                 "model_id": model_id,
@@ -345,6 +367,7 @@ def simulation_step():
         next_state, reward, done, info = env.step(action)
         
         _simulation_state["current_state"] = next_state
+        _simulation_state["fault_prediction"] = _safe_update_fault_detector(next_state)
         _simulation_state["episode_step"] += 1
         
         if done:
@@ -358,6 +381,7 @@ def simulation_step():
                 "control_rod": float(action[0]),
                 "coolant_flow": float(action[1])
             },
+            "fault_prediction": _simulation_state["fault_prediction"],
             "reward": float(reward),
             "done": bool(done)
         }
@@ -417,6 +441,7 @@ def manual_action():
         next_state, reward, done, info = env.step(action)
         
         _simulation_state["current_state"] = next_state
+        _simulation_state["fault_prediction"] = _safe_update_fault_detector(next_state)
         _simulation_state["episode_step"] += 1
         
         if done:
@@ -425,6 +450,7 @@ def manual_action():
         return jsonify(ResponseFormatter.success(
             data={
                 "reactor_state": next_state,
+                "fault_prediction": _simulation_state["fault_prediction"],
                 "episode_step": _simulation_state["episode_step"],
                 "action": {
                     "control_rod": float(action[0]),
@@ -456,6 +482,7 @@ def get_state():
     return jsonify(ResponseFormatter.success(
         data={
             "reactor_state": _simulation_state["current_state"],
+            "fault_prediction": _simulation_state["fault_prediction"],
             "episode_step": _simulation_state["episode_step"],
             "is_running": _simulation_state["is_running"]
         },

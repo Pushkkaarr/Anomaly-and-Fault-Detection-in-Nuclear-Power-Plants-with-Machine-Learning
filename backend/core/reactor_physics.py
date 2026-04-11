@@ -214,10 +214,13 @@ class ReactorEnvironmentWrapper(LoggerMixin):
         if isinstance(obs, np.ndarray):
             obs = obs.astype(float)
         
-        return {
+        state = {
             name: float(obs[i]) if i < len(obs) else 0.0
             for i, name in enumerate(self.STATE_COMPONENTS)
         }
+
+        state["coolant_flow_actual"] = float(getattr(self.env, "current_flow", 0.0))
+        return state
     
     def get_episode_summary(self) -> Dict[str, Any]:
         """

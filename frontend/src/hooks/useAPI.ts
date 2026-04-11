@@ -126,6 +126,7 @@ export function useSimulationControl() {
         store.setCurrentModel(modelId);
         store.setCurrentScenario(scenarioId);
         store.setReactorState(response.reactor_state);
+        store.setFaultPrediction(response.fault_prediction ?? null);
         store.clearHistory();
         store.setCurrentReward(0);   // reset accumulated reward for new episode
         store.setIsRunning(true);
@@ -167,6 +168,7 @@ export function useSimulationControl() {
       }
 
       store.setReactorState(response.reactor_state);
+      store.setFaultPrediction(response.fault_prediction ?? null);
       store.addStateToHistory(response.reactor_state);
       store.setEpisodeStep(response.episode_step || store.episode_step + 1);
 
@@ -185,6 +187,21 @@ export function useSimulationControl() {
             icon: "zap",
           });
         }
+      }
+
+      if (
+        response.fault_prediction?.status === "prediction_ready" &&
+        response.fault_prediction.predicted_state &&
+        response.fault_prediction.predicted_state !== "Normal" &&
+        response.fault_prediction.confidence !== undefined &&
+        response.fault_prediction.confidence >= 0.8
+      ) {
+        store.addEvent({
+          timestamp: response.reactor_state.time,
+          type: response.fault_prediction.predicted_state === "LOFA" ? "critical" : "warning",
+          message: `LSTM: ${response.fault_prediction.predicted_state} detected (${(response.fault_prediction.confidence * 100).toFixed(1)}% confidence)`,
+          icon: "shield-alert",
+        });
       }
 
       // Alert only on status CHANGE (not every step)
@@ -274,6 +291,7 @@ export function useSimulationControl() {
         const response = await apiClient.manualAction(action);
 
         store.setReactorState(response.reactor_state);
+        store.setFaultPrediction(response.fault_prediction ?? null);
         store.addStateToHistory(response.reactor_state);
         store.setEpisodeStep(response.episode_step || store.episode_step + 1);
 
@@ -431,6 +449,10 @@ export function useWebSocketSimulation(isEnabled: boolean) {
               if (data.reactor_state) {
                 store.setReactorState(data.reactor_state);
                 store.addStateToHistory(data.reactor_state);
+              }
+
+              if (data.fault_prediction) {
+                store.setFaultPrediction(data.fault_prediction);
               }
 
               // Update step count

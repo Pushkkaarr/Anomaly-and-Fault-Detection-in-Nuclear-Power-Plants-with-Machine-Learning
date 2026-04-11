@@ -9,6 +9,7 @@ export interface ReactorState {
   fuel_temp: number;   // Fuel temperature (K)
   coolant_temp: number; // Coolant temperature (K)
   pressure: number;    // System pressure (bar)
+  coolant_flow_actual?: number; // Actual physical coolant flow (kg/s)
   power_rate: number;  // Rate of power change
   temp_rate: number;   // Rate of temperature change
   time: number;        // Simulation time (s)
@@ -56,6 +57,22 @@ export interface SimulationMetrics {
   safety_events: number;
 }
 
+export interface FaultPrediction {
+  status: "insufficient_data" | "prediction_ready" | "error";
+  message?: string;
+  predicted_class?: number;
+  predicted_state?: "Normal" | "Scram" | "LOFA";
+  confidence?: number;
+  confidence_level?: "low" | "medium" | "high";
+  class_probabilities?: {
+    Normal: number;
+    Scram: number;
+    LOFA: number;
+  };
+  risk_level?: "low" | "medium" | "high" | "critical";
+  recommendations?: string[];
+}
+
 export interface SimulationState {
   is_running: boolean;
   is_paused: boolean;
@@ -67,6 +84,7 @@ export interface SimulationState {
   events: SimulationEvent[];
   error_message: string | null;
   last_action: Action | null;
+  fault_prediction: FaultPrediction | null;
   _event_counter?: number;
   history: ReactorState[];      // Rolling history for live graphs
   current_reward: number;
@@ -94,6 +112,7 @@ export interface StateResponse {
 
 export interface StepResponse {
   reactor_state: ReactorState;
+  fault_prediction?: FaultPrediction;
   reward: number;
   done: boolean;
   episode_step: number;

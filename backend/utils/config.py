@@ -36,6 +36,12 @@ MODELS_CONFIG = {
 
 # Nuclear environment paths
 NUCLEAR_ENV_PATH = PROJECT_ROOT / "python" / "SAC_enhanced_model" / "nuclear_reactor_sac"
+LSTM_OUTPUTS_PATH = PROJECT_ROOT / "python" / "LSTM" / "lstm_outputs"
+LSTM_MODEL_CONFIG = {
+    "model_path": LSTM_OUTPUTS_PATH / "advanced_nuclear_lstm_model.h5",
+    "config_path": LSTM_OUTPUTS_PATH / "model_config.json",
+    "scaler_path": LSTM_OUTPUTS_PATH / "feature_scaler.pkl",
+}
 
 # Flask configuration
 class Config:
