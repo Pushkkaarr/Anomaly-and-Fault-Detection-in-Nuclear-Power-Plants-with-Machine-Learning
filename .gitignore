@@ -210,3 +210,17 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 python/SAC_enhanced_model/nuclear_reactor_sac/action_distributions.png
+
+# LSTM integration artifacts
+python/LSTM/__pycache__/
+python/LSTM/.ipynb_checkpoints/
+python/LSTM/lstm_outputs/
+python/LSTM/*.h5
+python/LSTM/*.keras
+python/LSTM/*.pkl
+python/LSTM/*.png
+python/LSTM/*results*.json
+python/LSTM/*metrics*.json
+python/LSTM/*history*.csv
+python/LSTM/nuclear_fault_data_enhanced.csv
+python/nuclear_fault_data_enhanced.csv
