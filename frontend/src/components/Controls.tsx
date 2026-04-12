@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import { Model, Scenario, Action } from "@/types/reactor";
@@ -48,12 +48,12 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                 className="w-full text-left rounded-lg p-3 transition-all duration-200"
                 style={{
                   background: isSelected
-                    ? "rgba(0,212,255,0.12)"
+                    ? "rgba(0,255,136,0.12)"
                     : "rgba(5,15,31,0.7)",
                   border: isSelected
-                    ? "1px solid rgba(0,212,255,0.5)"
-                    : "1px solid rgba(0,212,255,0.1)",
-                  boxShadow: isSelected ? "0 0 12px rgba(0,212,255,0.15)" : "none",
+                    ? "1px solid rgba(0,255,136,0.5)"
+                    : "1px solid rgba(0,255,136,0.1)",
+                  boxShadow: isSelected ? "0 0 12px rgba(0,255,136,0.15)" : "none",
                   cursor: disabled ? "not-allowed" : "pointer",
                   opacity: disabled ? 0.5 : 1,
                 }}
@@ -63,14 +63,14 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                     <div
                       className="h-2 w-2 rounded-full"
                       style={{
-                        background: isSelected ? "#00d4ff" : "rgba(0,212,255,0.3)",
-                        boxShadow: isSelected ? "0 0 6px #00d4ff" : "none",
+                        background: isSelected ? "var(--brand-accent)" : "rgba(0,255,136,0.3)",
+                        boxShadow: isSelected ? "0 0 6px var(--brand-accent)" : "none",
                         transition: "all 0.2s",
                       }}
                     />
                     <span
                       className="text-sm font-semibold"
-                      style={{ color: isSelected ? "#00d4ff" : "#a0b8c8" }}
+                      style={{ color: isSelected ? "var(--brand-accent)" : "#a0b8c8" }}
                     >
                       {model.name}
                     </span>
@@ -78,16 +78,16 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
                   <span
                     className="text-xs font-bold px-2 py-0.5 rounded-full font-mono"
                     style={{
-                      background: isSelected ? "rgba(0,230,118,0.2)" : "rgba(255,255,255,0.05)",
-                      color: isSelected ? "#00e676" : "#6b8fa8",
-                      border: isSelected ? "1px solid rgba(0,230,118,0.4)" : "1px solid rgba(255,255,255,0.08)",
+                      background: isSelected ? "rgba(0,255,136,0.2)" : "rgba(255,255,255,0.05)",
+                      color: isSelected ? "var(--brand-accent)" : "#6b8fa8",
+                      border: isSelected ? "1px solid rgba(0,255,136,0.4)" : "1px solid rgba(255,255,255,0.08)",
                     }}
                   >
                     {model.reward_per_step.toFixed(1)} r/s
                   </span>
                 </div>
                 {isSelected && model.description && (
-                  <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "rgba(0,212,255,0.6)" }}>
+                  <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "rgba(0,255,136,0.6)" }}>
                     {model.description}
                   </p>
                 )}
@@ -112,8 +112,8 @@ interface ScenarioSelectorProps {
 }
 
 const DIFFICULTY_COLORS: Record<string, string> = {
-  easy: "#00e676",
-  medium: "#ffd600",
+  easy: "var(--brand-accent)",
+  medium: "#fbbf24",
   hard: "#ff6d00",
   extreme: "#ff3b3b",
 };
@@ -155,8 +155,8 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                 disabled={disabled}
                 className="w-full text-left rounded-lg px-3 py-2 transition-all duration-200"
                 style={{
-                  background: isSelected ? "rgba(0,212,255,0.1)" : "rgba(5,15,31,0.6)",
-                  border: isSelected ? `1px solid ${diffColor}60` : "1px solid rgba(0,212,255,0.08)",
+                  background: isSelected ? "rgba(0,255,136,0.1)" : "rgba(5,15,31,0.6)",
+                  border: isSelected ? `1px solid ${diffColor}60` : "1px solid rgba(0,255,136,0.08)",
                   cursor: disabled ? "not-allowed" : "pointer",
                   opacity: disabled ? 0.5 : 1,
                 }}
@@ -179,7 +179,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
                   </span>
                 </div>
                 {isSelected && scenario.description && (
-                  <p className="mt-1 text-xs leading-relaxed pl-6" style={{ color: "rgba(0,212,255,0.55)" }}>
+                  <p className="mt-1 text-xs leading-relaxed pl-6" style={{ color: "rgba(0,255,136,0.55)" }}>
                     {scenario.description}
                   </p>
                 )}
@@ -223,21 +223,21 @@ export const ControlButtons: React.FC<ControlButtonsProps> = ({
           className="w-full rounded-lg py-3 font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2"
           style={{
             background: canStart && !isLoading
-              ? "linear-gradient(135deg, rgba(0,212,255,0.2), rgba(0,212,255,0.08))"
+              ? "linear-gradient(135deg, rgba(0,255,136,0.2), rgba(0,255,136,0.08))"
               : "rgba(255,255,255,0.04)",
             border: canStart && !isLoading
-              ? "1px solid rgba(0,212,255,0.5)"
+              ? "1px solid rgba(0,255,136,0.5)"
               : "1px solid rgba(255,255,255,0.08)",
-            color: canStart && !isLoading ? "#00d4ff" : "rgba(255,255,255,0.25)",
+            color: canStart && !isLoading ? "var(--brand-accent)" : "rgba(255,255,255,0.25)",
             cursor: canStart && !isLoading ? "pointer" : "not-allowed",
-            boxShadow: canStart && !isLoading ? "0 0 20px rgba(0,212,255,0.15), inset 0 0 20px rgba(0,212,255,0.05)" : "none",
+            boxShadow: canStart && !isLoading ? "0 0 20px rgba(0,255,136,0.15), inset 0 0 20px rgba(0,255,136,0.05)" : "none",
           }}
         >
           {isLoading ? (
             <>
               <div
                 className="h-4 w-4 rounded-full border-2 border-t-transparent animate-spin"
-                style={{ borderColor: "rgba(0,212,255,0.3)", borderTopColor: "#00d4ff" }}
+                style={{ borderColor: "rgba(0,255,136,0.3)", borderTopColor: "var(--brand-accent)" }}
               />
               Initializing...
             </>
@@ -255,7 +255,7 @@ export const ControlButtons: React.FC<ControlButtonsProps> = ({
           style={{
             background: "linear-gradient(135deg, rgba(255,59,59,0.2), rgba(255,59,59,0.08))",
             border: "1px solid rgba(255,59,59,0.5)",
-            color: "#ff6b6b",
+            color: "#ff6568",
             cursor: "pointer",
             boxShadow: "0 0 12px rgba(255,59,59,0.15)",
           }}
@@ -321,9 +321,9 @@ export const ManualControl: React.FC<ManualControlProps> = ({
           <span
             className="text-xs font-bold font-mono px-2 py-0.5 rounded"
             style={{
-              background: Math.abs(controlRod) > 0.3 ? "rgba(0,212,255,0.15)" : "rgba(255,255,255,0.05)",
-              color: controlRod > 0.2 ? "#ff6b6b" : controlRod < -0.2 ? "#40c4ff" : "#6b8fa8",
-              border: "1px solid rgba(0,212,255,0.15)",
+              background: Math.abs(controlRod) > 0.3 ? "rgba(0,255,136,0.15)" : "rgba(255,255,255,0.05)",
+              color: controlRod > 0.2 ? "#ff6568" : controlRod < -0.2 ? "#9ca3af" : "#6b8fa8",
+              border: "1px solid rgba(0,255,136,0.15)",
             }}
           >
             {controlRod > 0 ? "↓" : controlRod < 0 ? "↑" : "—"} {controlRod.toFixed(2)}
@@ -335,7 +335,7 @@ export const ManualControl: React.FC<ManualControlProps> = ({
           onChange={handleRodChange}
           disabled={!isEnabled}
           className="w-full"
-          style={{ accentColor: "#00d4ff" }}
+          style={{ accentColor: "var(--brand-accent)" }}
         />
         <div className="flex justify-between text-xs mt-1" style={{ color: "rgba(107,143,168,0.5)" }}>
           <span>↑ Withdraw</span>
@@ -352,7 +352,7 @@ export const ManualControl: React.FC<ManualControlProps> = ({
             className="text-xs font-bold font-mono px-2 py-0.5 rounded"
             style={{
               background: Math.abs(coolantFlow) > 0.3 ? "rgba(64,196,255,0.1)" : "rgba(255,255,255,0.05)",
-              color: "#40c4ff",
+              color: "#9ca3af",
               border: "1px solid rgba(64,196,255,0.2)",
             }}
           >
@@ -365,7 +365,7 @@ export const ManualControl: React.FC<ManualControlProps> = ({
           onChange={handleFlowChange}
           disabled={!isEnabled}
           className="w-full"
-          style={{ accentColor: "#40c4ff" }}
+          style={{ accentColor: "#9ca3af" }}
         />
         <div className="flex justify-between text-xs mt-1" style={{ color: "rgba(107,143,168,0.5)" }}>
           <span>← Reduce</span>
@@ -396,9 +396,9 @@ export const SimulationStatus: React.FC<{
       <span
         className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold"
         style={{
-          background: "rgba(0,230,118,0.15)",
-          border: "1px solid rgba(0,230,118,0.4)",
-          color: "#00e676",
+          background: "rgba(0,255,136,0.15)",
+          border: "1px solid rgba(0,255,136,0.4)",
+          color: "var(--brand-accent)",
         }}
       >
         <span className="led-green" style={{ width: 6, height: 6 }} />
@@ -418,3 +418,5 @@ export const SimulationStatus: React.FC<{
     )}
   </div>
 );
+
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useMemo } from "react";
 import {
@@ -27,13 +27,13 @@ const MiniTooltip = ({ active, payload, label, unit }: any) => {
     return (
         <div style={{
             background: "rgba(2,8,18,0.97)",
-            border: "1px solid rgba(0,212,255,0.2)",
+            border: "1px solid rgba(0,255,136,0.2)",
             borderRadius: 5,
             padding: "5px 10px",
             fontSize: 10,
             fontFamily: MONO,
         }}>
-            <p style={{ color: "rgba(0,212,255,0.5)", margin: 0 }}>t={Number(label).toFixed(1)}s</p>
+            <p style={{ color: "rgba(0,255,136,0.5)", margin: 0 }}>t={Number(label).toFixed(1)}s</p>
             <p style={{ color: payload[0].color, margin: 0, fontWeight: "bold" }}>
                 {Number(payload[0].value).toFixed(2)}{unit}
             </p>
@@ -79,7 +79,7 @@ const MetricChart: React.FC<MetricChartProps> = ({
             </div>
             <ResponsiveContainer width="100%" height={height}>
                 <LineChart data={data} margin={{ top: 3, right: 8, bottom: 0, left: -10 }}>
-                    <CartesianGrid strokeDasharray="2 5" stroke="rgba(0,212,255,0.04)" />
+                    <CartesianGrid strokeDasharray="2 5" stroke="rgba(0,255,136,0.04)" />
                     <XAxis
                         dataKey="t"
                         tick={AXIS_TICK}
@@ -120,10 +120,10 @@ export const LiveGraphs: React.FC<LiveGraphsProps> = ({ history, isRunning }) =>
     if (!history || history.length < 2) {
         return (
             <div className="flex h-44 items-center justify-center rounded-lg"
-                style={{ background: "rgba(0,0,0,0.2)", border: "1px dashed rgba(0,212,255,0.1)" }}>
+                style={{ background: "rgba(0,0,0,0.2)", border: "1px dashed rgba(0,255,136,0.1)" }}>
                 <div className="text-center">
                     <div className="text-2xl mb-2 opacity-20">📈</div>
-                    <p className="text-xs" style={{ color: "rgba(0,212,255,0.35)" }}>
+                    <p className="text-xs" style={{ color: "rgba(0,255,136,0.35)" }}>
                         {isRunning ? "Collecting data…" : "Start simulation to view live graphs"}
                     </p>
                 </div>
@@ -142,36 +142,36 @@ export const LiveGraphs: React.FC<LiveGraphsProps> = ({ history, isRunning }) =>
             {/* FUEL TEMP — tight axis so ±5K changes are visible */}
             <MetricChart
                 data={fuelData}
-                color="#ff5252"
+                color="#fb2c36"
                 label="Fuel Temperature"
                 unit="K"
                 minRange={2}           // show chart even if only 2K range (AI is precise)
                 height={85}
-                refLines={[{ y: 950, color: "#ff5252", label: "⚠950K" }]}
+                refLines={[{ y: 950, color: "#fb2c36", label: "⚠950K" }]}
             />
 
             {/* COOLANT TEMP */}
             <MetricChart
                 data={coolantData}
-                color="#40c4ff"
+                color="#9ca3af"
                 label="Coolant Temperature"
                 unit="K"
                 minRange={0.5}
                 height={75}
-                refLines={[{ y: 310, color: "#ffd600", label: "⚠310K" }]}
+                refLines={[{ y: 310, color: "#fbbf24", label: "⚠310K" }]}
             />
 
             {/* POWER — show as % */}
             <MetricChart
                 data={powerData}
-                color="#69ff47"
+                color="var(--brand-accent)"
                 label="Reactor Power"
                 unit="%"
                 minRange={0.2}
                 height={75}
                 refLines={[
-                    { y: 120, color: "#ff5252", label: "120%" },
-                    { y: 80, color: "#ffd600", label: "80%" },
+                    { y: 120, color: "#fb2c36", label: "120%" },
+                    { y: 80, color: "#fbbf24", label: "80%" },
                 ]}
             />
 
@@ -184,8 +184,8 @@ export const LiveGraphs: React.FC<LiveGraphsProps> = ({ history, isRunning }) =>
                 minRange={0.05}
                 height={65}
                 refLines={[
-                    { y: 12, color: "#ff5252", label: "12 bar" },
-                    { y: 8, color: "#ffd600", label: "8 bar" },
+                    { y: 12, color: "#fb2c36", label: "12 bar" },
+                    { y: 8, color: "#fbbf24", label: "8 bar" },
                 ]}
             />
         </div>
@@ -193,3 +193,5 @@ export const LiveGraphs: React.FC<LiveGraphsProps> = ({ history, isRunning }) =>
 };
 
 export default LiveGraphs;
+
+

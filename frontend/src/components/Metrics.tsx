@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import { SimulationEvent, SimulationMetrics } from "@/types/reactor";
@@ -16,7 +16,7 @@ const EVENT_STYLES = {
     bg: "rgba(255,59,59,0.1)",
     border: "rgba(255,59,59,0.4)",
     icon: <AlertCircle className="h-3.5 w-3.5" />,
-    iconColor: "#ff5252",
+    iconColor: "#fb2c36",
     textColor: "#ffaaaa",
     badge: "rgba(255,59,59,0.25)",
   },
@@ -24,25 +24,25 @@ const EVENT_STYLES = {
     bg: "rgba(255,214,0,0.08)",
     border: "rgba(255,214,0,0.35)",
     icon: <AlertTriangle className="h-3.5 w-3.5" />,
-    iconColor: "#ffd600",
+    iconColor: "#fbbf24",
     textColor: "#ffe680",
     badge: "rgba(255,214,0,0.2)",
   },
   success: {
-    bg: "rgba(0,230,118,0.08)",
-    border: "rgba(0,230,118,0.35)",
+    bg: "rgba(0,255,136,0.08)",
+    border: "rgba(0,255,136,0.35)",
     icon: <CheckCircle className="h-3.5 w-3.5" />,
-    iconColor: "#00e676",
+    iconColor: "var(--brand-accent)",
     textColor: "#aaefcc",
-    badge: "rgba(0,230,118,0.2)",
+    badge: "rgba(0,255,136,0.2)",
   },
   info: {
-    bg: "rgba(0,212,255,0.06)",
-    border: "rgba(0,212,255,0.25)",
+    bg: "rgba(0,255,136,0.06)",
+    border: "rgba(0,255,136,0.25)",
     icon: <Info className="h-3.5 w-3.5" />,
-    iconColor: "#00d4ff",
+    iconColor: "var(--brand-accent)",
     textColor: "#a0d8e8",
-    badge: "rgba(0,212,255,0.15)",
+    badge: "rgba(0,255,136,0.15)",
   },
 };
 
@@ -138,14 +138,14 @@ export const MetricsSummary: React.FC<MetricsSummaryProps> = ({ metrics, isRunni
           key={i}
           className="rounded-lg px-3 py-2"
           style={{
-            background: item.highlight ? "rgba(0,212,255,0.08)" : "rgba(255,255,255,0.03)",
-            border: item.highlight ? "1px solid rgba(0,212,255,0.2)" : "1px solid rgba(255,255,255,0.05)",
+            background: item.highlight ? "rgba(0,255,136,0.08)" : "rgba(255,255,255,0.03)",
+            border: item.highlight ? "1px solid rgba(0,255,136,0.2)" : "1px solid rgba(255,255,255,0.05)",
           }}
         >
           <p className="section-label" style={{ fontSize: "0.58rem" }}>{item.label}</p>
           <p
             className="text-base font-bold font-mono mt-0.5"
-            style={{ color: item.highlight ? "#00d4ff" : "#a0b8c8" }}
+            style={{ color: item.highlight ? "var(--brand-accent)" : "#a0b8c8" }}
           >
             {item.value}
             {item.unit && (
@@ -165,7 +165,7 @@ export const ScoreCard: React.FC<{
   value: number | string;
   unit?: string;
   color?: string;
-}> = ({ title, value, unit, color = "#00d4ff" }) => (
+}> = ({ title, value, unit, color = "var(--brand-accent)" }) => (
   <div
     className="rounded-lg px-3 py-2"
     style={{ background: "rgba(5,15,31,0.8)", border: `1px solid ${color}25` }}
@@ -177,3 +177,5 @@ export const ScoreCard: React.FC<{
     </p>
   </div>
 );
+
+

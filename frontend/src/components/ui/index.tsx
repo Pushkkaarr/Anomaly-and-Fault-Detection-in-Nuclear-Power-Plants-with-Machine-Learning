@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 
@@ -54,7 +54,7 @@ const BUTTON_VARIANTS = {
   primary: {
     background: "rgba(0, 212, 255, 0.15)",
     border: "1px solid rgba(0, 212, 255, 0.4)",
-    color: "#00d4ff",
+    color: "var(--brand-accent)",
   },
   secondary: {
     background: "rgba(255, 255, 255, 0.05)",
@@ -64,7 +64,7 @@ const BUTTON_VARIANTS = {
   danger: {
     background: "rgba(255, 59, 59, 0.12)",
     border: "1px solid rgba(255, 59, 59, 0.4)",
-    color: "#ff6b6b",
+    color: "#ff6568",
   },
   ghost: {
     background: "transparent",
@@ -153,10 +153,10 @@ interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 const BADGE_VARIANTS = {
   default: { bg: "rgba(107,143,168,0.15)", color: "#6b8fa8", border: "rgba(107,143,168,0.3)" },
-  success: { bg: "rgba(0,230,118,0.12)", color: "#00e676", border: "rgba(0,230,118,0.35)" },
-  warning: { bg: "rgba(255,214,0,0.1)", color: "#ffd600", border: "rgba(255,214,0,0.3)" },
-  danger: { bg: "rgba(255,59,59,0.12)", color: "#ff5252", border: "rgba(255,59,59,0.35)" },
-  info: { bg: "rgba(0,212,255,0.1)", color: "#00d4ff", border: "rgba(0,212,255,0.3)" },
+  success: { bg: "rgba(0,255,136,0.12)", color: "var(--brand-accent)", border: "rgba(0,255,136,0.35)" },
+  warning: { bg: "rgba(255,214,0,0.1)", color: "#fbbf24", border: "rgba(255,214,0,0.3)" },
+  danger: { bg: "rgba(255,59,59,0.12)", color: "#fb2c36", border: "rgba(255,59,59,0.35)" },
+  info: { bg: "rgba(0,255,136,0.1)", color: "var(--brand-accent)", border: "rgba(0,255,136,0.3)" },
 };
 
 export const Badge: React.FC<BadgeProps> = ({
@@ -190,8 +190,8 @@ export const Spinner: React.FC<{ size?: "sm" | "md" | "lg" }> = ({ size = "md" }
       style={{
         width: px,
         height: px,
-        border: "2px solid rgba(0,212,255,0.15)",
-        borderTopColor: "#00d4ff",
+        border: "2px solid rgba(0,255,136,0.15)",
+        borderTopColor: "var(--brand-accent)",
       }}
     />
   );
@@ -205,8 +205,8 @@ interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 const ALERT_STYLES = {
-  info: { bg: "rgba(0,212,255,0.08)", border: "rgba(0,212,255,0.3)", color: "#a0d8e8" },
-  success: { bg: "rgba(0,230,118,0.08)", border: "rgba(0,230,118,0.3)", color: "#aaefcc" },
+  info: { bg: "rgba(0,255,136,0.08)", border: "rgba(0,255,136,0.3)", color: "#a0d8e8" },
+  success: { bg: "rgba(0,255,136,0.08)", border: "rgba(0,255,136,0.3)", color: "#aaefcc" },
   warning: { bg: "rgba(255,214,0,0.08)", border: "rgba(255,214,0,0.3)", color: "#ffe680" },
   error: { bg: "rgba(255,59,59,0.1)", border: "rgba(255,59,59,0.35)", color: "#ffaaaa" },
 };
@@ -243,3 +243,5 @@ export const Alert: React.FC<AlertProps> = ({
     </div>
   );
 };
+
+

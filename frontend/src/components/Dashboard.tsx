@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import { useSimulation } from "@/store/simulation";
@@ -47,7 +47,7 @@ const LoadingScreen = () => (
       </div>
       <p
         className="text-sm font-semibold tracking-widest uppercase"
-        style={{ color: "rgba(0,212,255,0.6)" }}
+        style={{ color: "rgba(0,255,136,0.6)" }}
       >
         Connecting to Reactor Control System...
       </p>
@@ -72,18 +72,18 @@ const OfflineScreen = () => (
       }}
     >
       <div className="text-5xl mb-4">⚠️</div>
-      <h2 className="text-lg font-bold mb-2" style={{ color: "#ff6b6b" }}>
+      <h2 className="text-lg font-bold mb-2" style={{ color: "#ff6568" }}>
         Backend Offline
       </h2>
       <p className="text-sm mb-4" style={{ color: "rgba(107,143,168,0.8)" }}>
         Cannot connect to the reactor control backend at{" "}
-        <code className="font-mono text-xs" style={{ color: "#00d4ff" }}>
+        <code className="font-mono text-xs" style={{ color: "var(--brand-accent)" }}>
           http://localhost:8000
         </code>
       </p>
       <div
         className="text-xs rounded-lg p-3 text-left font-mono"
-        style={{ background: "rgba(0,0,0,0.4)", color: "rgba(0,212,255,0.7)" }}
+        style={{ background: "rgba(0,0,0,0.4)", color: "rgba(0,255,136,0.7)" }}
       >
         <p style={{ color: "rgba(107,143,168,0.6)" }}># Start the backend:</p>
         <p>cd backend</p>
@@ -161,19 +161,19 @@ export const Dashboard: React.FC = () => {
   const isWarning = state ? state.fuel_temp > 950 && !isCritical : false;
   const faultAccent =
     fault?.risk_level === "critical"
-      ? "#ff6b6b"
+      ? "#ff6568"
       : fault?.risk_level === "high"
         ? "#ff9f43"
         : fault?.risk_level === "medium"
-          ? "#ffd600"
-          : "#00e676";
+          ? "#fbbf24"
+          : "var(--brand-accent)";
 
   if (isChecking) return <LoadingScreen />;
   if (!isHealthy) return <OfflineScreen />;
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen overflow-x-hidden"
       style={{ background: "linear-gradient(135deg, #020812 0%, #050f1f 50%, #020812 100%)" }}
     >
       {/* ══════════════════════════════════════════════════════════
@@ -182,20 +182,20 @@ export const Dashboard: React.FC = () => {
       <header
         style={{
           background: "rgba(5,15,31,0.95)",
-          borderBottom: "1px solid rgba(0,212,255,0.12)",
+          borderBottom: "1px solid rgba(0,255,136,0.12)",
           backdropFilter: "blur(12px)",
           position: "sticky",
           top: 0,
           zIndex: 50,
         }}
       >
-        <div className="mx-auto max-w-screen-2xl px-4 py-3 flex items-center justify-between">
+        <div className="mx-auto flex max-w-screen-2xl flex-wrap items-center justify-between gap-3 px-4 py-3">
           {/* Left: Identity */}
           <div className="flex items-center gap-3">
             <div
               className="text-2xl"
               style={{
-                filter: "drop-shadow(0 0 8px rgba(0,212,255,0.6))",
+                filter: "drop-shadow(0 0 8px rgba(0,255,136,0.6))",
                 animationName: store.is_running ? "reactor-spin" : "none",
                 animationDuration: "8s",
                 animationTimingFunction: "linear",
@@ -207,7 +207,7 @@ export const Dashboard: React.FC = () => {
             <div>
               <h1
                 className="text-sm font-bold tracking-widest uppercase"
-                style={{ color: "#00d4ff", textShadow: "0 0 12px rgba(0,212,255,0.4)" }}
+                style={{ color: "var(--brand-accent)", textShadow: "0 0 12px rgba(0,255,136,0.4)" }}
               >
                 Nuclear Reactor Control System
               </h1>
@@ -218,7 +218,7 @@ export const Dashboard: React.FC = () => {
           </div>
 
           {/* Center: Status */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-4">
             <SimulationStatus
               isRunning={store.is_running}
               currentModel={store.current_model}
@@ -227,13 +227,13 @@ export const Dashboard: React.FC = () => {
             {state && (
               <div
                 className="flex items-center gap-2 text-xs font-mono px-3 py-1.5 rounded-lg"
-                style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(0,212,255,0.1)" }}
+                style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(0,255,136,0.1)" }}
               >
                 <span style={{ color: "rgba(107,143,168,0.6)" }}>t =</span>
-                <span style={{ color: "#00d4ff" }}>{state.time.toFixed(1)}s</span>
+                <span style={{ color: "var(--brand-accent)" }}>{state.time.toFixed(1)}s</span>
                 <span style={{ color: "rgba(107,143,168,0.3)" }}>·</span>
                 <span style={{ color: "rgba(107,143,168,0.6)" }}>step</span>
-                <span style={{ color: "#00d4ff" }}>{store.episode_step}/200</span>
+                <span style={{ color: "var(--brand-accent)" }}>{store.episode_step}/200</span>
               </div>
             )}
           </div>
@@ -243,9 +243,9 @@ export const Dashboard: React.FC = () => {
             <div
               className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg"
               style={{
-                background: wsConnected ? "rgba(0,230,118,0.08)" : "rgba(255,214,0,0.08)",
-                border: `1px solid ${wsConnected ? "rgba(0,230,118,0.3)" : "rgba(255,214,0,0.3)"}`,
-                color: wsConnected ? "#00e676" : "#ffd600",
+                background: wsConnected ? "rgba(0,255,136,0.08)" : "rgba(255,214,0,0.08)",
+                border: `1px solid ${wsConnected ? "rgba(0,255,136,0.3)" : "rgba(255,214,0,0.3)"}`,
+                color: wsConnected ? "var(--brand-accent)" : "#fbbf24",
               }}
             >
               <div className={wsConnected ? "led-green" : "led-yellow"} style={{ width: 6, height: 6 }} />
@@ -254,9 +254,9 @@ export const Dashboard: React.FC = () => {
             <div
               className="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg"
               style={{
-                background: "rgba(0,230,118,0.08)",
-                border: "1px solid rgba(0,230,118,0.3)",
-                color: "#00e676",
+                background: "rgba(0,255,136,0.08)",
+                border: "1px solid rgba(0,255,136,0.3)",
+                color: "var(--brand-accent)",
               }}
             >
               <div className="led-green" style={{ width: 6, height: 6 }} />
@@ -275,7 +275,7 @@ export const Dashboard: React.FC = () => {
           style={{
             background: "rgba(255,59,59,0.15)",
             borderBottom: "2px solid rgba(255,59,59,0.8)",
-            color: "#ff6b6b",
+            color: "#ff6568",
             animationName: "critical-pulse",
             animationDuration: "1s",
             animationTimingFunction: "ease-in-out",
@@ -310,12 +310,12 @@ export const Dashboard: React.FC = () => {
           ══════════════════════════════════════════════════════════ */}
       <main className="mx-auto max-w-screen-2xl px-4 py-4">
         <div
-          className="grid gap-4"
-          style={{ gridTemplateColumns: "300px 1fr 340px", minHeight: "calc(100vh - 120px)" }}
+          className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)_340px]"
+          style={{ minHeight: "calc(100vh - 120px)" }}
         >
 
           {/* ══════ LEFT PANEL: CONTROLS ══════ */}
-          <div className="space-y-3">
+          <aside className="order-2 space-y-3 lg:order-1">
             {/* Model Selection */}
             <div className="nuclear-panel p-4">
               <ModelSelector
@@ -362,28 +362,28 @@ export const Dashboard: React.FC = () => {
                     <span>Step {store.episode_step}</span>
                     <span>{((store.episode_step / 200) * 100).toFixed(0)}%</span>
                   </div>
-                  <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(0,212,255,0.1)" }}>
+                  <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(0,255,136,0.1)" }}>
                     <div
                       className="h-full rounded-full transition-all duration-300"
                       style={{
                         width: `${(store.episode_step / 200) * 100}%`,
-                        background: "linear-gradient(90deg, #00d4ff, #00e676)",
-                        boxShadow: "0 0 6px rgba(0,212,255,0.5)",
+                        background: "linear-gradient(90deg, var(--brand-accent), var(--brand-accent))",
+                        boxShadow: "0 0 6px rgba(0,255,136,0.5)",
                       }}
                     />
                   </div>
                 </div>
                 {/* Quick stats */}
                 <div className="grid grid-cols-2 gap-2">
-                  <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(0,212,255,0.1)" }} className="rounded-lg p-2 text-center">
+                  <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(0,255,136,0.1)" }} className="rounded-lg p-2 text-center">
                     <p className="section-label" style={{ fontSize: "0.55rem" }}>Sim Time</p>
-                    <p className="font-mono text-sm font-bold" style={{ color: "#00d4ff" }}>
+                    <p className="font-mono text-sm font-bold" style={{ color: "var(--brand-accent)" }}>
                       {state.time.toFixed(1)}s
                     </p>
                   </div>
-                  <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(0,230,118,0.1)" }} className="rounded-lg p-2 text-center">
+                  <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(0,255,136,0.1)" }} className="rounded-lg p-2 text-center">
                     <p className="section-label" style={{ fontSize: "0.55rem" }}>Total Score</p>
-                    <p className="font-mono text-sm font-bold" style={{ color: "#00e676" }}>
+                    <p className="font-mono text-sm font-bold" style={{ color: "var(--brand-accent)" }}>
                       {(store.metrics?.total_reward ?? 0).toFixed(1)}
                     </p>
                   </div>
@@ -394,7 +394,7 @@ export const Dashboard: React.FC = () => {
             {/* Post-simulation metrics - "Final Report" style */}
             {!store.is_running && store.metrics && store.metrics.episode_steps > 0 && (
               <div 
-                className="nuclear-panel p-4 border-2 border-[#00d4ff]/30"
+                className="nuclear-panel p-4 border-2 border-(--brand-accent)/30"
                 style={{
                   animationName: "enter",
                   animationDuration: "500ms",
@@ -403,8 +403,8 @@ export const Dashboard: React.FC = () => {
                 }}
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="h-5 w-1 bg-[#00d4ff]" />
-                  <p className="text-xs font-bold tracking-widest uppercase text-[#00d4ff]">
+                  <div className="h-5 w-1 bg-(--brand-accent)" />
+                  <p className="text-xs font-bold tracking-widest uppercase text-(--brand-accent)">
                     Final Reactor Deployment Report
                   </p>
                 </div>
@@ -415,7 +415,7 @@ export const Dashboard: React.FC = () => {
                       <span className="text-sm font-bold text-white/90">
                         {store.metrics.total_reward > 0 ? "✓ SUCCESSFUL STABILIZATION" : "❌ SYSTEM INSTABILITY"}
                       </span>
-                      <span className="text-xs font-mono text-[#00e676]">
+                      <span className="text-xs font-mono text-(--brand-accent)">
                         SCORE: {store.metrics.total_reward.toFixed(1)}
                       </span>
                     </div>
@@ -439,10 +439,10 @@ export const Dashboard: React.FC = () => {
                 isEnabled={store.is_running}
               />
             </div>
-          </div>
+          </aside>
 
           {/* ══════ CENTER PANEL: REACTOR VISUALIZATION ══════ */}
-          <div className="space-y-4">
+          <section className="order-1 space-y-4 lg:order-2 lg:min-w-0">
             {/* Main reactor SVG */}
             <ReactorVisualization
               state={state}
@@ -457,7 +457,7 @@ export const Dashboard: React.FC = () => {
                 className="nuclear-panel p-4"
               >
                 <p className="section-label mb-4">Core Instrument Panel</p>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   <AnalogGauge
                     value={state.power * 100}
                     min={0}
@@ -497,10 +497,10 @@ export const Dashboard: React.FC = () => {
 
             {/* AI Action Display */}
             {store.is_running && store.last_action && (
-              <div className="nuclear-panel p-4 border border-[#00d4ff]/20 bg-[#00d4ff]/05">
+              <div className="nuclear-panel p-4 border border-(--brand-accent)/20 bg-(--brand-accent)/05">
                 <div className="flex items-center justify-between mb-4">
                   <p className="section-label">🤖 AI Decision Engine (SAC)</p>
-                  <span className="text-[0.6rem] font-mono text-[#00d4ff]/60 animate-pulse">
+                  <span className="text-[0.6rem] font-mono text-(--brand-accent)/60 animate-pulse">
                     ANALYZING...
                   </span>
                 </div>
@@ -512,7 +512,7 @@ export const Dashboard: React.FC = () => {
                       <span style={{ color: "rgba(107,143,168,0.7)" }}>Rod Delta</span>
                       <span
                         className="font-mono font-bold"
-                        style={{ color: Math.abs(store.last_action.control_rod) > 0.3 ? "#ff6b6b" : "#00d4ff" }}
+                        style={{ color: Math.abs(store.last_action.control_rod) > 0.3 ? "#ff6568" : "var(--brand-accent)" }}
                       >
                         {store.last_action.control_rod > 0.005 ? "↓ INSERT" : store.last_action.control_rod < -0.005 ? "↑ WITHDRAW" : "HOLD"}
                       </span>
@@ -523,8 +523,8 @@ export const Dashboard: React.FC = () => {
                         style={{
                           width: `${Math.min(100, Math.abs(store.last_action.control_rod) * 200)}%`,
                           marginLeft: store.last_action.control_rod < 0 ? "auto" : "0",
-                          background: store.last_action.control_rod > 0.005 ? "#ff5252" : store.last_action.control_rod < -0.005 ? "#40c4ff" : "#ffd600",
-                          boxShadow: `0 0 8px ${store.last_action.control_rod > 0.005 ? "#ff525280" : "#40c4ff80"}`,
+                          background: store.last_action.control_rod > 0.005 ? "#fb2c36" : store.last_action.control_rod < -0.005 ? "#9ca3af" : "#fbbf24",
+                          boxShadow: `0 0 8px ${store.last_action.control_rod > 0.005 ? "#fb2c3680" : "#9ca3af80"}`,
                         }}
                       />
                     </div>
@@ -535,7 +535,7 @@ export const Dashboard: React.FC = () => {
                       <span style={{ color: "rgba(107,143,168,0.7)" }}>Flow Adjust</span>
                       <span
                         className="font-mono font-bold"
-                        style={{ color: "#00e676" }}
+                        style={{ color: "var(--brand-accent)" }}
                       >
                         {store.last_action.coolant_flow > 0.005 ? "+ BOOST" : store.last_action.coolant_flow < -0.005 ? "- REDUCE" : "STEADY"}
                       </span>
@@ -546,8 +546,8 @@ export const Dashboard: React.FC = () => {
                         style={{
                           width: `${Math.min(100, Math.abs(store.last_action.coolant_flow) * 200)}%`,
                           marginLeft: store.last_action.coolant_flow < 0 ? "auto" : "0",
-                          background: "#00e676",
-                          boxShadow: "0 0 8px rgba(0,230,118,0.4)",
+                          background: "var(--brand-accent)",
+                          boxShadow: "0 0 8px rgba(0,255,136,0.4)",
                         }}
                       />
                     </div>
@@ -566,10 +566,10 @@ export const Dashboard: React.FC = () => {
                 </div>
               </div>
             )}
-          </div>
+          </section>
 
           {/* ══════ RIGHT PANEL: DATA & EVENTS ══════ */}
-          <div className="space-y-3">
+          <aside className="order-3 space-y-3 lg:min-w-0">
 
             {/* Live readings */}
             {state && (
@@ -582,35 +582,35 @@ export const Dashboard: React.FC = () => {
                       value: `${state.fuel_temp.toFixed(1)} K`,
                       target: "Target: ~950K",
                       pct: Math.min(state.fuel_temp / 1150, 1),
-                      color: isCritical ? "#ff3b3b" : isWarning ? "#ffd600" : "#00e676",
+                      color: isCritical ? "#ff3b3b" : isWarning ? "#fbbf24" : "var(--brand-accent)",
                     },
                     {
                       label: "Reactor Power",
                       value: `${(state.power * 100).toFixed(1)} %`,
                       target: "Target: 80–120%",
                       pct: Math.min(state.power / 1.5, 1),
-                      color: (state.power < 0.8 || state.power > 1.2) ? "#ffd600" : "#00e676",
+                      color: (state.power < 0.8 || state.power > 1.2) ? "#fbbf24" : "var(--brand-accent)",
                     },
                     {
                       label: "Coolant Temperature",
                       value: `${state.coolant_temp.toFixed(1)} K`,
                       target: "Safe: 280–310K",
                       pct: Math.min(state.coolant_temp / 340, 1),
-                      color: (state.coolant_temp < 280 || state.coolant_temp > 310) ? "#ffd600" : "#40c4ff",
+                      color: (state.coolant_temp < 280 || state.coolant_temp > 310) ? "#fbbf24" : "#9ca3af",
                     },
                     {
                       label: "System Pressure",
                       value: `${state.pressure.toFixed(2)} bar`,
                       target: "Safe: 8–12 bar",
                       pct: Math.min((state.pressure - 5) / 11, 1),
-                      color: (state.pressure < 8 || state.pressure > 12) ? "#ffd600" : "#00e676",
+                      color: (state.pressure < 8 || state.pressure > 12) ? "#fbbf24" : "var(--brand-accent)",
                     },
                     {
                       label: "Coolant Flow",
                       value: `${(state.coolant_flow_actual ?? 0).toFixed(0)} kg/s`,
                       target: "Actual physical flow",
                       pct: Math.min((state.coolant_flow_actual ?? 0) / 12000, 1),
-                      color: "#40c4ff",
+                      color: "#9ca3af",
                     },
                   ].map((item, i) => (
                     <div
@@ -676,7 +676,7 @@ export const Dashboard: React.FC = () => {
                   className="rounded-lg p-3 text-sm"
                   style={{
                     background: "rgba(0,0,0,0.3)",
-                    border: "1px solid rgba(0,212,255,0.08)",
+                    border: "1px solid rgba(0,255,136,0.08)",
                     color: "rgba(160,216,232,0.8)",
                   }}
                 >
@@ -738,10 +738,10 @@ export const Dashboard: React.FC = () => {
                                 width: `${(fault.class_probabilities?.[label] ?? 0) * 100}%`,
                                 background:
                                   label === "LOFA"
-                                    ? "#ff6b6b"
+                                    ? "#ff6568"
                                     : label === "Scram"
-                                      ? "#ffd600"
-                                      : "#00e676",
+                                      ? "#fbbf24"
+                                      : "var(--brand-accent)",
                               }}
                             />
                           </div>
@@ -781,18 +781,18 @@ export const Dashboard: React.FC = () => {
                     {
                       label: "Power Rate",
                       value: state.power_rate,
-                      color: Math.abs(state.power_rate) > 0.05 ? "#ffd600" : "#00e676",
+                      color: Math.abs(state.power_rate) > 0.05 ? "#fbbf24" : "var(--brand-accent)",
                     },
                     {
                       label: "Temp Rate",
                       value: state.temp_rate,
-                      color: Math.abs(state.temp_rate) > 5 ? "#ffd600" : "#40c4ff",
+                      color: Math.abs(state.temp_rate) > 5 ? "#fbbf24" : "#9ca3af",
                     },
                   ].map((item, i) => (
                     <div
                       key={i}
                       className="rounded-lg p-2 text-center"
-                      style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(0,212,255,0.06)" }}
+                      style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(0,255,136,0.06)" }}
                     >
                       <p className="section-label" style={{ fontSize: "0.55rem" }}>{item.label}</p>
                       <p
@@ -815,7 +815,7 @@ export const Dashboard: React.FC = () => {
               />
             </div>
 
-          </div>
+          </aside>
         </div>
       </main>
 
@@ -824,7 +824,7 @@ export const Dashboard: React.FC = () => {
         className="mt-4 py-2 px-4 text-center text-xs"
         style={{
           background: "rgba(5,15,31,0.8)",
-          borderTop: "1px solid rgba(0,212,255,0.08)",
+          borderTop: "1px solid rgba(0,255,136,0.08)",
           color: "rgba(107,143,168,0.4)",
         }}
       >
@@ -836,3 +836,5 @@ export const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
+

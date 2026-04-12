@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useRef, useEffect } from "react";
 
@@ -56,9 +56,9 @@ export const AnalogGauge: React.FC<AnalogGaugeProps> = ({
     // Determine status color
     const getStatusColor = () => {
         if (warnMax !== undefined && clampedValue > warnMax) return "#ff3b3b";
-        if (safeMax !== undefined && clampedValue > safeMax) return "#ffd600";
-        if (safeMin !== undefined && clampedValue < safeMin) return "#ffd600";
-        return "#00e676";
+        if (safeMax !== undefined && clampedValue > safeMax) return "#fbbf24";
+        if (safeMin !== undefined && clampedValue < safeMin) return "#fbbf24";
+        return "var(--brand-accent)";
     };
 
     const statusColor = getStatusColor();
@@ -92,7 +92,7 @@ export const AnalogGauge: React.FC<AnalogGaugeProps> = ({
                 <circle
                     cx={cx} cy={cy} r={trackR + 3}
                     fill="none"
-                    stroke="rgba(0,212,255,0.08)"
+                    stroke="rgba(0,255,136,0.08)"
                     strokeWidth="1"
                 />
 
@@ -110,7 +110,7 @@ export const AnalogGauge: React.FC<AnalogGaugeProps> = ({
                     <path
                         d={describeArc(safeStartAngle, safeEndAngle, trackR)}
                         fill="none"
-                        stroke="rgba(0,230,118,0.35)"
+                        stroke="rgba(0,255,136,0.35)"
                         strokeWidth={size * 0.055}
                         strokeLinecap="butt"
                     />
@@ -198,7 +198,7 @@ export const AnalogGauge: React.FC<AnalogGaugeProps> = ({
                 </text>
             </svg>
 
-            <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: "rgba(0,212,255,0.7)" }}>
+            <p className="text-xs font-semibold tracking-widest uppercase" style={{ color: "rgba(0,255,136,0.7)" }}>
                 {label}
             </p>
         </div>
@@ -206,3 +206,5 @@ export const AnalogGauge: React.FC<AnalogGaugeProps> = ({
 };
 
 export default AnalogGauge;
+
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { ReactorState } from "@/types/reactor";
@@ -158,11 +158,11 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
     return (
       <div
         className="flex h-80 items-center justify-center rounded-lg"
-        style={{ background: "rgba(2,8,18,0.8)", border: "1px solid rgba(0,212,255,0.12)" }}
+        style={{ background: "rgba(2,8,18,0.8)", border: "1px solid rgba(0,255,136,0.12)" }}
       >
         <div className="text-center">
           <div className="text-5xl mb-4" style={{ opacity: 0.3 }}>⚛️</div>
-          <p style={{ color: "rgba(0,212,255,0.5)", fontSize: 13 }}>
+          <p style={{ color: "rgba(0,255,136,0.5)", fontSize: 13 }}>
             Reactor offline — initialize simulation to begin
           </p>
         </div>
@@ -187,7 +187,7 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
       ? `↑ WITHDRAW ${rodPosition.toFixed(4)}`
       : "STABLE";
   const rodLabelColor =
-    rodPosition > 0.005 ? "#ff5252" : rodPosition < -0.005 ? "#40c4ff" : "#ffd600";
+    rodPosition > 0.005 ? "#fb2c36" : rodPosition < -0.005 ? "#9ca3af" : "#fbbf24";
 
   // Coolant action label
   const flowLabel =
@@ -197,7 +197,7 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
       ? `↓ REDUCE ${coolantFlow.toFixed(4)}`
       : "STEADY";
   const flowColor =
-    coolantFlow > 0.005 ? "#00e676" : coolantFlow < -0.005 ? "#ffd600" : "#40c4ff";
+    coolantFlow > 0.005 ? "var(--brand-accent)" : coolantFlow < -0.005 ? "#fbbf24" : "#9ca3af";
 
   // Coolant flow line animation speed & opacity
   const flowLineOpacity = 0.12 + Math.abs(coolantFlow) * 0.5;
@@ -208,10 +208,10 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
       className="relative rounded-lg overflow-hidden"
       style={{
         background: "rgba(1, 4, 10, 0.98)",
-        border: `1px solid ${isCritical ? "rgba(255,59,59,0.7)" : "rgba(0,212,255,0.25)"}`,
+        border: `1px solid ${isCritical ? "rgba(255,59,59,0.7)" : "rgba(0,255,136,0.25)"}`,
         boxShadow: isCritical
           ? "0 0 40px rgba(255,59,59,0.3), inset 0 0 30px rgba(255,59,59,0.05)"
-          : "0 0 20px rgba(0,212,255,0.08)",
+          : "0 0 20px rgba(0,255,136,0.08)",
         animationName: isCritical ? "critical-pulse" : "none",
         animationDuration: "0.8s",
         animationIterationCount: "infinite",
@@ -227,20 +227,20 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
           style={{ background: "rgba(2,12,28,0.88)", backdropFilter: "blur(5px)" }}
         >
           <div className="text-5xl mb-3">🛡️</div>
-          <h2 className="text-2xl font-black tracking-[0.2em] uppercase mb-1" style={{ color: "#00d4ff", textShadow: "0 0 20px #00d4ff80" }}>
+          <h2 className="text-2xl font-black tracking-[0.2em] uppercase mb-1" style={{ color: "var(--brand-accent)", textShadow: "0 0 20px var(--brand-accent)80" }}>
             Operation Secured
           </h2>
-          <p className="text-[0.65rem] font-mono tracking-widest" style={{ color: "rgba(0,212,255,0.6)" }}>
+          <p className="text-[0.65rem] font-mono tracking-widest" style={{ color: "rgba(0,255,136,0.6)" }}>
             FINAL LOG AT T+{state.time.toFixed(2)}S
           </p>
         </div>
       )}
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b" style={{ borderColor: "rgba(0,212,255,0.12)" }}>
+      <div className="flex items-center justify-between px-4 py-2.5 border-b" style={{ borderColor: "rgba(0,255,136,0.12)" }}>
         <div className="flex items-center gap-2">
           <div className="text-xl" style={{
-            filter: isCritical ? "drop-shadow(0 0 10px #ff3b3b)" : "drop-shadow(0 0 8px #00d4ff)",
+            filter: isCritical ? "drop-shadow(0 0 10px #ff3b3b)" : "drop-shadow(0 0 8px var(--brand-accent))",
             animationName: isRunning ? "fuel-pulse" : "none",
             animationDuration: "1.5s",
             animationTimingFunction: "ease-in-out",
@@ -250,11 +250,11 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
         </div>
         <div className="flex items-center gap-3 font-mono">
           <span style={{ color: rodLabelColor, fontSize: "0.62rem" }}>{rodLabel}</span>
-          <div className="w-[1px] h-3 bg-white/5" />
+          <div className="w-px h-3 bg-white/5" />
           <span style={{ color: flowColor, fontSize: "0.62rem" }}>{flowLabel}</span>
-          <div className="w-[1px] h-3 bg-white/5" />
+          <div className="w-px h-3 bg-white/5" />
           <div className={`${isCritical ? "led-red" : isWarning ? "led-yellow" : "led-green"}`} />
-          <span style={{ color: isCritical ? "#ff3b3b" : isWarning ? "#ffd600" : "#00e676", fontSize: "0.65rem", fontWeight: "bold" }}>
+          <span style={{ color: isCritical ? "#ff3b3b" : isWarning ? "#fbbf24" : "var(--brand-accent)", fontSize: "0.65rem", fontWeight: "bold" }}>
             {isCritical ? "MELTDOWN RISK" : isWarning ? "THERMAL ALERT" : "STABLE"}
           </span>
         </div>
@@ -270,7 +270,7 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
           </radialGradient>
           <linearGradient id="coolantFlowGrad" x1="0%" y1="100%" x2="0%" y2="0%">
             <stop offset="0%"   stopColor="#004e92" stopOpacity="0.8" />
-            <stop offset="50%"  stopColor="#00d4ff" stopOpacity="1" />
+            <stop offset="50%"  stopColor="var(--brand-accent)" stopOpacity="1" />
             <stop offset="100%" stopColor="#ffffff" stopOpacity="0.8" />
           </linearGradient>
           <filter id="fluidGlow">
@@ -290,7 +290,7 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
 
         {/* Reactor Vessel Boundary */}
         <rect x="70" y="63" width="260" height="200" rx="14" ry="14"
-          fill="rgba(5, 15, 30, 0.95)" stroke="rgba(0,212,255,0.2)" strokeWidth="2" />
+          fill="rgba(5, 15, 30, 0.95)" stroke="rgba(0,255,136,0.2)" strokeWidth="2" />
 
         {/* ── BULK FLUID OVERLAY (THE "INSIDE" FEEL) ── */}
         <rect x="72" y="65" width="256" height="196" rx="12" ry="12"
@@ -362,7 +362,7 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
           // Calculate if particle is in the "hot zone" (middle of core)
           const distToCore = Math.abs(p.y - 158);
           const heatRatio = Math.max(0, 1 - distToCore / 80);
-          const pColor = heatRatio > 0.4 ? "#ffffff" : "#40c4ff";
+          const pColor = heatRatio > 0.4 ? "#ffffff" : "#9ca3af";
           
           return (
             <circle key={p.id} cx={p.x} cy={p.y} r={2.8}
@@ -380,12 +380,12 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
         {[155, 200, 245].map((x, i) => (
           <g key={`rod-${i}`}>
             <line x1={x} y1="20" x2={x} y2={ROD_TOP}
-              stroke="rgba(0,212,255,0.2)" strokeWidth="4" strokeLinecap="round" />
+              stroke="rgba(0,255,136,0.2)" strokeWidth="4" strokeLinecap="round" />
             <rect
               x={x - 4.5} y={20}
               width={9} height={Math.max(0, rodY - 20)}
               fill="url(#rodGrad)"
-              stroke={rodPosition > 0.005 ? "#ff5252" : rodPosition < -0.005 ? "#40c4ff" : "rgba(0,212,255,0.4)"}
+              stroke={rodPosition > 0.005 ? "#fb2c36" : rodPosition < -0.005 ? "#9ca3af" : "rgba(0,255,136,0.4)"}
               strokeWidth="1.2"
               rx="2"
               style={{ transition: "height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)" }}
@@ -393,9 +393,9 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
             <rect
               x={x - 6} y={rodY - 6}
               width={12} height={12} rx="3"
-              fill={rodPosition > 0.005 ? "#ff5252" : rodPosition < -0.005 ? "#40c4ff" : "#ffd600"}
+              fill={rodPosition > 0.005 ? "#fb2c36" : rodPosition < -0.005 ? "#9ca3af" : "#fbbf24"}
               style={{
-                filter: `drop-shadow(0 0 10px ${rodPosition > 0.005 ? "#ff5252" : rodPosition < -0.005 ? "#40c4ff" : "#ffd600"})`,
+                filter: `drop-shadow(0 0 10px ${rodPosition > 0.005 ? "#fb2c36" : rodPosition < -0.005 ? "#9ca3af" : "#fbbf24"})`,
                 transition: "all 0.3s ease"
               }}
             />
@@ -405,8 +405,8 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
         {/* ── Coolant Plumbing (In/Out) ── */}
         {/* Inlet Pipe */}
         <path d="M 120 278 L 280 278" fill="none" stroke="#004e92" strokeWidth="6" strokeLinecap="round" opacity="0.4" />
-        <path d="M 100 263 Q 100 278 120 278" fill="none" stroke="#00d4ff" strokeWidth="4" opacity={0.3 + flowLineOpacity} />
-        <path d="M 300 263 Q 300 278 280 278" fill="none" stroke="#00d4ff" strokeWidth="4" opacity={0.3 + flowLineOpacity} />
+        <path d="M 100 263 Q 100 278 120 278" fill="none" stroke="var(--brand-accent)" strokeWidth="4" opacity={0.3 + flowLineOpacity} />
+        <path d="M 300 263 Q 300 278 280 278" fill="none" stroke="var(--brand-accent)" strokeWidth="4" opacity={0.3 + flowLineOpacity} />
         
         {/* Outlet Pipe */}
         <path d="M 130 50 L 270 50" fill="none" stroke="#d32f2f" strokeWidth="6" strokeLinecap="round" opacity="0.3" />
@@ -414,7 +414,7 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
         <path d="M 285 63 Q 285 50 265 50" fill="none" stroke="#ff8f00" strokeWidth="4" opacity="0.4" />
 
         <text x="200" y="292" textAnchor="middle" fontSize="9" fontWeight="bold"
-          fill="#40c4ff" fontFamily="JetBrains Mono, monospace" style={{ opacity: 0.8 }}>
+          fill="#9ca3af" fontFamily="JetBrains Mono, monospace" style={{ opacity: 0.8 }}>
           PRIMARY INLET {isRunning ? ">>>" : ""}
         </text>
         <text x="200" y="40" textAnchor="middle" fontSize="9" fontWeight="bold"
@@ -427,12 +427,12 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
           <rect width="220" height="10" rx="5" fill="rgba(255,255,255,0.05)" />
           <rect
             width={Math.min(220, 220 * (state.power / 1.5))} height="10" rx="5"
-            fill={state.power > 1.2 ? "#ff3b3b" : state.power > 0.8 ? "#00e676" : "#ffd600"}
+            fill={state.power > 1.2 ? "#ff3b3b" : state.power > 0.8 ? "var(--brand-accent)" : "#fbbf24"}
             style={{ 
               transitionProperty: "width",
               transitionDuration: "0.4s",
               transitionTimingFunction: "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-              filter: `drop-shadow(0 0 8px ${state.power > 1.2 ? "#ff3b3b" : state.power > 0.8 ? "#00e676" : "#ffd600"})`
+              filter: `drop-shadow(0 0 8px ${state.power > 1.2 ? "#ff3b3b" : state.power > 0.8 ? "var(--brand-accent)" : "#fbbf24"})`
             }}
           />
           <text x="230" y="8" fontSize="10" fill="white/80" fontWeight="bold" fontFamily="JetBrains Mono">
@@ -442,15 +442,15 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
       </svg>
 
       {/* ── Bottom telemetry strip ── */}
-      <div className="grid grid-cols-4 gap-0 border-t" style={{ borderColor: "rgba(0,212,255,0.08)" }}>
+      <div className="grid grid-cols-4 gap-0 border-t" style={{ borderColor: "rgba(0,255,136,0.08)" }}>
         {[
-          { label: "FUEL TEMP", value: `${state.fuel_temp.toFixed(0)}K`, color: isCritical ? "#ff3b3b" : isWarning ? "#ffd600" : "#00e676" },
-          { label: "COOLANT", value: `${state.coolant_temp.toFixed(0)}K`, color: state.coolant_temp > 310 ? "#ffd600" : "#40c4ff" },
-          { label: "PRESSURE", value: `${state.pressure.toFixed(1)} bar`, color: (state.pressure < 8 || state.pressure > 12) ? "#ffd600" : "#00e676" },
+          { label: "FUEL TEMP", value: `${state.fuel_temp.toFixed(0)}K`, color: isCritical ? "#ff3b3b" : isWarning ? "#fbbf24" : "var(--brand-accent)" },
+          { label: "COOLANT", value: `${state.coolant_temp.toFixed(0)}K`, color: state.coolant_temp > 310 ? "#fbbf24" : "#9ca3af" },
+          { label: "PRESSURE", value: `${state.pressure.toFixed(1)} bar`, color: (state.pressure < 8 || state.pressure > 12) ? "#fbbf24" : "var(--brand-accent)" },
           { label: "SIM TIME", value: `${state.time.toFixed(1)}s`, color: "#6b8fa8" },
         ].map((item, i) => (
           <div key={i} className="flex flex-col items-center py-2 px-1"
-            style={{ borderRight: i < 3 ? "1px solid rgba(0,212,255,0.06)" : "none" }}>
+            style={{ borderRight: i < 3 ? "1px solid rgba(0,255,136,0.06)" : "none" }}>
             <span className="section-label" style={{ fontSize: "0.55rem" }}>{item.label}</span>
             <span className="font-mono font-bold mt-0.5"
               style={{ 
@@ -471,3 +471,5 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
 };
 
 export default ReactorVisualization;
+
+

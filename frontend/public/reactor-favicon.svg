@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Aegis Core favicon">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="45%" r="70%">
+      <stop offset="0%" stop-color="#0f2434"/>
+      <stop offset="100%" stop-color="#020812"/>
+    </radialGradient>
+    <radialGradient id="core" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#98ffd4"/>
+      <stop offset="100%" stop-color="#00ff88"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+
+  <circle cx="32" cy="32" r="5.2" fill="url(#core)"/>
+  <circle cx="32" cy="32" r="20" fill="none" stroke="#00ff88" stroke-opacity="0.88" stroke-width="2.2"/>
+
+  <ellipse cx="32" cy="32" rx="20" ry="8" fill="none" stroke="#b4fff0" stroke-opacity="0.9" stroke-width="2.2"/>
+  <ellipse cx="32" cy="32" rx="20" ry="8" transform="rotate(60 32 32)" fill="none" stroke="#b4fff0" stroke-opacity="0.9" stroke-width="2.2"/>
+  <ellipse cx="32" cy="32" rx="20" ry="8" transform="rotate(-60 32 32)" fill="none" stroke="#b4fff0" stroke-opacity="0.9" stroke-width="2.2"/>
+</svg>
