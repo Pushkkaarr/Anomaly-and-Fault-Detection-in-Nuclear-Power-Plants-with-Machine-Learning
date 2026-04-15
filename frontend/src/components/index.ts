@@ -26,5 +26,10 @@ export { ReactorVisualization } from "./ReactorVisualization";
 export { default as AnalogGauge } from "./AnalogGauge";
 export { default as LiveGraphs } from "./LiveGraphs";
 
+// New: Scenario & Narration
+export { ScenarioIntelPanel, SCENARIO_INTEL } from "./ScenarioIntelPanel";
+export { MissionReport } from "./MissionReport";
+export { LiveNarrator } from "./LiveNarrator";
+
 // Dashboard
 export { default as Dashboard } from "./Dashboard";
