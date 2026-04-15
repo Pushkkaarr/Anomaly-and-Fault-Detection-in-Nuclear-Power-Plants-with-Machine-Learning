@@ -226,3 +226,4 @@ python/LSTM/*metrics*.json
 python/LSTM/*history*.csv
 python/LSTM/nuclear_fault_data_enhanced.csv
 python/nuclear_fault_data_enhanced.csv
+TECHNICAL_REFERENCE.md
