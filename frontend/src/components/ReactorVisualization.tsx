@@ -97,45 +97,57 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
 
   // Base speed from actual coolant flow value (if available)
   const actualFlowNorm = state?.coolant_flow_actual
-    ? Math.min(state.coolant_flow_actual / 10000, 1)
-    : 0.5;
+    ? Math.min(state.coolant_flow_actual / 8000, 1.5)
+    : 0.8;
 
   const animateParticles = useCallback(
     (timestamp: number) => {
-      // Throttle to ~40fps for performance
-      if (timestamp - lastTimeRef.current < 24) {
+      // Throttle to ~45fps for performance
+      if (timestamp - lastTimeRef.current < 22) {
         animFrameRef.current = requestAnimationFrame(animateParticles);
         return;
       }
       lastTimeRef.current = timestamp;
 
       // Compute speed from flow action and running state
-      const flowBoost = Math.max(-0.8, Math.min(1, coolantFlow * 10));
-      const baseSpeed  = isRunning ? 3.5 + flowBoost * 2.0 : 0;
-      const spawnRate  = isRunning ? Math.min(0.9, 0.5 + flowBoost * 0.35) : 0;
+      // Action is -1 to +1. We shift it to be a multiplier.
+      const actionMultiplier = 1.0 + coolantFlow * 0.8; 
+      const speedMultiplier = isRunning ? (0.5 + actualFlowNorm * 2.5 * actionMultiplier) : 0;
+      
+      // Spawn rate also depends on flow
+      const spawnRate = isRunning ? Math.min(0.95, 0.4 + actualFlowNorm * 0.3) : 0;
 
       setParticles(prev => {
         // Move all particles upward
-        let updated = prev.map(p => ({
-          ...p,
-          yCurrent: p.yCurrent - p.speed * baseSpeed,
-          // Fade out as they exit through top of vessel
-          opacity: p.yCurrent < VESSEL_TOP_Y + 20
-            ? p.opacity - 0.08
-            : p.opacity,
-        })).filter(p => p.opacity > 0.04 && p.yCurrent > VESSEL_TOP_Y - 30);
+        let updated = prev.map(p => {
+          // Particles speed up as they heat up in the core
+          const inCoreZone = p.yCurrent > 150 && p.yCurrent < 260;
+          const heatSpeedBoost = inCoreZone ? 1.2 : 1.0;
+          
+          return {
+            ...p,
+            yCurrent: p.yCurrent - p.speed * speedMultiplier * heatSpeedBoost,
+            // Fade out as they exit through top of vessel
+            opacity: p.yCurrent < VESSEL_TOP_Y + 30
+              ? Math.max(0, p.opacity - 0.1)
+              : p.opacity,
+          };
+        }).filter(p => p.opacity > 0.02 && p.yCurrent > VESSEL_TOP_Y - 40);
 
         // Spawn new particles at the bottom
-        if (Math.random() < spawnRate && updated.length < 60) {
+        // Max particles also scales with flow
+        const maxParticles = 30 + Math.floor(actualFlowNorm * 50);
+        
+        if (Math.random() < spawnRate && updated.length < maxParticles) {
           const lane = Math.floor(Math.random() * LANE_X.length);
           updated.push({
             id:       particleIdRef.current++,
-            x:        LANE_X[lane] + (Math.random() - 0.5) * 14,
-            yCurrent: VESSEL_BOTTOM_Y - Math.random() * 10,
+            x:        LANE_X[lane] + (Math.random() - 0.5) * 16,
+            yCurrent: VESSEL_BOTTOM_Y + Math.random() * 10,
             yStart:   VESSEL_BOTTOM_Y,
             yEnd:     VESSEL_TOP_Y,
-            opacity:  0.55 + Math.random() * 0.45,
-            speed:    0.65 + Math.random() * 0.8,
+            opacity:  0.4 + Math.random() * 0.6,
+            speed:    0.8 + Math.random() * 1.2,
             hue:      190,
             lane,
           });
@@ -146,7 +158,7 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
 
       animFrameRef.current = requestAnimationFrame(animateParticles);
     },
-    [coolantFlow, isRunning]
+    [coolantFlow, isRunning, actualFlowNorm]
   );
 
   useEffect(() => {
@@ -486,17 +498,23 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
         <path d="M 128 78 Q 128 62 148 62" fill="none" stroke="#ff8f00" strokeWidth="5" opacity="0.5" />
         <path d="M 372 78 Q 372 62 352 62" fill="none" stroke="#ff8f00" strokeWidth="5" opacity="0.5" />
 
-        {/* ── Labels ── */}
-        <text x="250" y="395" textAnchor="middle" fontSize="10" fontWeight="bold"
-          fill="#6b8fa8" fontFamily="JetBrains Mono, monospace" opacity="0.8"
-        >
-          PRIMARY COOLANT INLET  {isRunning ? "▶▶▶" : ""}
-        </text>
-        <text x="250" y="52" textAnchor="middle" fontSize="10" fontWeight="bold"
-          fill="#ff8f00" fontFamily="JetBrains Mono, monospace" opacity="0.8"
-        >
-          {isRunning ? "▶▶▶" : ""}  PRIMARY COOLANT OUTLET
-        </text>
+        {/* ── Labels with Dynamic Intensity ── */}
+        <g transform="translate(250, 392)">
+           <text textAnchor="middle" fontSize="10" fontWeight="bold"
+            fill={actualFlowNorm < 0.5 ? "#fbbf24" : "#6b8fa8"} 
+            fontFamily="JetBrains Mono, monospace" opacity={isRunning ? 1 : 0.4}
+          >
+            PRIMARY COOLANT INLET  {isRunning ? (actualFlowNorm > 1.0 ? "▶▶▶▶" : actualFlowNorm > 0.5 ? "▶▶▶" : "▶") : ""}
+          </text>
+        </g>
+        <g transform="translate(250, 52)">
+          <text textAnchor="middle" fontSize="10" fontWeight="bold"
+            fill={actualFlowNorm > 1.2 ? "#ff3b3b" : "#ff8f00"} 
+            fontFamily="JetBrains Mono, monospace" opacity={isRunning ? 1 : 0.4}
+          >
+            {isRunning ? (actualFlowNorm > 1.0 ? "▶▶▶▶" : actualFlowNorm > 0.5 ? "▶▶▶" : "▶") : ""}  PRIMARY COOLANT OUTLET
+          </text>
+        </g>
 
         {/* ── Power Strip (bottom of vessel interior) ── */}
         <g transform="translate(105, 326)">

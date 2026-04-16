@@ -64,7 +64,7 @@ export const SCENARIO_INTEL: Record<string, {
     normal_state: { fuel_temp: "< 960 K", power: "75–90%", pressure: "9–12 bar", coolant: "< 320 K" },
     difficultyColor: "#ff6568",
   },
-  rod_stuck: {
+  rod_malfunction: {
     title: "Rod Stuck Event",
     icon: "🔒",
     tagline: "Control rod jams — AI loses a primary reactivity tool",
@@ -150,6 +150,10 @@ export const SCENARIO_INTEL: Record<string, {
     difficultyColor: "#a78bfa",
   },
 };
+
+// Aliases
+SCENARIO_INTEL["rod_stuck"] = SCENARIO_INTEL.rod_malfunction;
+
 
 // ─── Component ────────────────────────────────────────────────────────────────
 interface ScenarioIntelPanelProps {

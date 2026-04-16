@@ -69,7 +69,8 @@ class NuclearReactorEnv(gym.Env):
         
         self.reward_shaping = reward_shaping
         self.dt = 0.1  # 100ms timestep
-        self.max_episode_time = 100.0  # Add this line
+        self.max_episode_time = 20.0  # 20 seconds = 200 steps at 0.1s/step
+        #self.max_episode_time = 100.0  # Add this line
 
         # State tracking
         self.state = None
@@ -102,7 +103,8 @@ class NuclearReactorEnv(gym.Env):
             Tc0 += self.np_random.uniform(-2, 2)
         
         # Add this for variable episodes:
-        self.max_episode_time = self.np_random.uniform(100, 150) if self.np_random is not None else 100.0
+        #self.max_episode_time = self.np_random.uniform(100, 150) if self.np_random is not None else 100.0
+        self.max_episode_time = 20.0  # 20 seconds for all episodes
         self.state = np.array([P0, C0, Tf0, Tc0], dtype=np.float32)
         self.t = 0.0
         self.prev_power = P0
