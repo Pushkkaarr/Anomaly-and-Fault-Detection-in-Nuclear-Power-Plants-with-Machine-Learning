@@ -43,6 +43,7 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({
             return (
               <button
                 key={model.id}
+                type="button"
                 onClick={() => !disabled && onSelect(model.id)}
                 disabled={disabled}
                 className="w-full text-left rounded-lg p-3 transition-all duration-200"
@@ -151,6 +152,7 @@ export const ScenarioSelector: React.FC<ScenarioSelectorProps> = ({
             return (
               <button
                 key={scenario.id}
+                type="button"
                 onClick={() => !disabled && onSelect(scenario.id)}
                 disabled={disabled}
                 className="w-full text-left rounded-lg px-3 py-2 transition-all duration-200"
@@ -218,6 +220,7 @@ export const ControlButtons: React.FC<ControlButtonsProps> = ({
     <div className="space-y-2">
       {!isRunning ? (
         <button
+          type="button"
           onClick={onStart}
           disabled={isLoading || !canStart}
           className="w-full rounded-lg py-3 font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2"
@@ -250,6 +253,7 @@ export const ControlButtons: React.FC<ControlButtonsProps> = ({
         </button>
       ) : (
         <button
+          type="button"
           onClick={onStop}
           className="w-full rounded-lg py-3 font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2"
           style={{
@@ -267,6 +271,7 @@ export const ControlButtons: React.FC<ControlButtonsProps> = ({
 
       {onReset && (
         <button
+          type="button"
           onClick={onReset}
           disabled={isLoading || isRunning}
           className="w-full rounded-lg py-2 text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-2"

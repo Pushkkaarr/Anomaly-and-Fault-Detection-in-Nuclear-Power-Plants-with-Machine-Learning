@@ -310,6 +310,7 @@ export const Dashboard: React.FC = () => {
         >
           <span>⚠ {store.error_message}</span>
           <button
+            type="button"
             onClick={() => store.setErrorMessage(null)}
             style={{ color: "rgba(255,128,128,0.6)" }}
             className="text-lg leading-none ml-4"
@@ -899,6 +900,7 @@ export const Dashboard: React.FC = () => {
                   isRunning={store.is_running}
                 />
                 <button
+                  type="button"
                   onClick={() => store.reset()}
                   className="w-full py-2.5 text-xs uppercase tracking-widest font-bold rounded-xl transition-all duration-200"
                   style={{
