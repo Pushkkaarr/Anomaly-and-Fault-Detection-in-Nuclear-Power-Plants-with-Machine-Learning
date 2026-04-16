@@ -353,13 +353,13 @@ export const ScenarioIntelPanel: React.FC<ScenarioIntelPanelProps> = ({
                           </p>
                           <p className="font-mono text-xs font-bold" style={{ color: "#fbbf24" }}>
                             {inp.param.toLowerCase().includes("fuel")
-                              ? currentState.fuel_temp.toFixed(0)
+                              ? currentState.fuel_temp.toFixed(3)
                               : inp.param.toLowerCase().includes("power")
-                              ? (currentState.power * 100).toFixed(0) + "%"
+                              ? (currentState.power * 100).toFixed(3) + "%"
                               : inp.param.toLowerCase().includes("cool") && inp.unit === "K"
-                              ? currentState.coolant_temp.toFixed(0)
+                              ? currentState.coolant_temp.toFixed(3)
                               : inp.param.toLowerCase().includes("press")
-                              ? currentState.pressure.toFixed(1)
+                              ? currentState.pressure.toFixed(3)
                               : "—"}
                             {" "}
                             {inp.param.toLowerCase().includes("power") ? "" : inp.unit !== "%" ? inp.unit : ""}

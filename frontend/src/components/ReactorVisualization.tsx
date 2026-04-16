@@ -199,18 +199,18 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
   // Rod action indicator
   const rodLabel =
     rodPosition > 0.005
-      ? `↓ INSERT  ${rodPosition.toFixed(4)}`
+      ? `↓ INSERT  ${rodPosition.toFixed(3)}`
       : rodPosition < -0.005
-      ? `↑ WITHDRAW ${rodPosition.toFixed(4)}`
+      ? `↑ WITHDRAW ${rodPosition.toFixed(3)}`
       : "STABLE";
   const rodLabelColor =
     rodPosition > 0.005 ? "#fb2c36" : rodPosition < -0.005 ? "#9ca3af" : "#fbbf24";
 
   const flowLabel =
     coolantFlow > 0.005
-      ? `↑ BOOST +${coolantFlow.toFixed(4)}`
+      ? `↑ BOOST +${coolantFlow.toFixed(3)}`
       : coolantFlow < -0.005
-      ? `↓ REDUCE ${coolantFlow.toFixed(4)}`
+      ? `↓ REDUCE ${coolantFlow.toFixed(3)}`
       : "STEADY";
   const flowColor =
     coolantFlow > 0.005 ? "var(--brand-accent)" : coolantFlow < -0.005 ? "#fbbf24" : "#9ca3af";
@@ -243,7 +243,7 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
             Simulation Complete
           </h2>
           <p className="text-xs font-mono tracking-widest" style={{ color: "rgba(0,255,136,0.5)" }}>
-            FINAL LOG AT T+{state.time.toFixed(2)}S
+            FINAL LOG AT T+{state.time.toFixed(3)}S
           </p>
         </div>
       )}
@@ -534,7 +534,7 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
             fontSize="9" fill="rgba(255,255,255,0.7)" fontWeight="bold"
             fontFamily="JetBrains Mono"
           >
-            {(state.power * 100).toFixed(0)}%
+            {(state.power * 100).toFixed(3)}%
           </text>
         </g>
 
@@ -559,7 +559,7 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
             }}
           />
           <text x="44" y="195" textAnchor="middle" fontSize="7.5" fill="rgba(107,143,168,0.5)" fontFamily="JetBrains Mono">
-            {(cumulRod * 100).toFixed(0)}% IN
+            {(cumulRod * 100).toFixed(3)}% IN
           </text>
         </g>
       </svg>
@@ -572,22 +572,22 @@ export const ReactorVisualization: React.FC<ReactorVisualizationProps> = ({
         {[
           {
             label: "FUEL TEMP",
-            value: `${state.fuel_temp.toFixed(0)}K`,
+            value: `${state.fuel_temp.toFixed(3)}K`,
             color: isCritical ? "#ff3b3b" : isWarning ? "#fbbf24" : "var(--brand-accent)",
           },
           {
             label: "COOLANT",
-            value: `${state.coolant_temp.toFixed(0)}K`,
+            value: `${state.coolant_temp.toFixed(3)}K`,
             color: state.coolant_temp > 320 ? "#fbbf24" : "#9ca3af",
           },
           {
             label: "PRESSURE",
-            value: `${state.pressure.toFixed(1)} bar`,
+            value: `${state.pressure.toFixed(3)} bar`,
             color: state.pressure < 8 || state.pressure > 12 ? "#fbbf24" : "var(--brand-accent)",
           },
           {
             label: "SIM TIME",
-            value: `${state.time.toFixed(1)}s`,
+            value: `${state.time.toFixed(3)}s`,
             color: "#6b8fa8",
           },
         ].map((item, i) => (

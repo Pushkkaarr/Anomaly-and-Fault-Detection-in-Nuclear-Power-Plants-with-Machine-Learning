@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import { SimulationEvent, SimulationMetrics } from "@/types/reactor";
@@ -96,7 +96,7 @@ export const EventLog: React.FC<EventLogProps> = ({ events, onClear }) => {
                     className="text-xs mt-0.5 font-mono"
                     style={{ color: "rgba(107,143,168,0.5)", fontSize: "0.6rem" }}
                   >
-                    t={event.timestamp.toFixed(1)}s
+                    t={event.timestamp.toFixed(3)}s
                   </p>
                 </div>
               </div>
@@ -123,12 +123,12 @@ export const MetricsSummary: React.FC<MetricsSummaryProps> = ({ metrics, isRunni
   }
 
   const items = [
-    { label: "Total Reward", value: metrics.total_reward.toFixed(1), unit: "pts", highlight: true },
+    { label: "Total Reward", value: metrics.total_reward.toFixed(3), unit: "pts", highlight: true },
     { label: "Steps", value: metrics.episode_steps.toString(), unit: "" },
-    { label: "Duration", value: metrics.episode_duration.toFixed(1), unit: "s" },
-    { label: "Peak Fuel Temp", value: metrics.max_fuel_temp.toFixed(0), unit: "K" },
-    { label: "Peak Coolant", value: metrics.max_coolant_temp.toFixed(0), unit: "K" },
-    { label: "Avg Pressure", value: metrics.avg_pressure.toFixed(1), unit: "bar" },
+    { label: "Duration", value: metrics.episode_duration.toFixed(3), unit: "s" },
+    { label: "Peak Fuel Temp", value: metrics.max_fuel_temp.toFixed(3), unit: "K" },
+    { label: "Peak Coolant", value: metrics.max_coolant_temp.toFixed(3), unit: "K" },
+    { label: "Avg Pressure", value: metrics.avg_pressure.toFixed(3), unit: "bar" },
   ];
 
   return (
@@ -172,7 +172,7 @@ export const ScoreCard: React.FC<{
   >
     <p className="section-label" style={{ fontSize: "0.58rem" }}>{title}</p>
     <p className="text-lg font-bold font-mono mt-0.5" style={{ color }}>
-      {typeof value === "number" ? value.toFixed(2) : value}
+      {typeof value === "number" ? value.toFixed(3) : value}
       {unit && <span className="text-xs font-normal ml-1" style={{ color: "rgba(107,143,168,0.5)" }}>{unit}</span>}
     </p>
   </div>

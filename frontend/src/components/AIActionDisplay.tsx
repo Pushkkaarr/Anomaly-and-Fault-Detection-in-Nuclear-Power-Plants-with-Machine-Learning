@@ -89,8 +89,8 @@ export const AIActionDisplay: React.FC<AIActionDisplayProps> = ({
             {action.control_rod > 0.05
               ? "↓ Inserting rods (reduce power)"
               : action.control_rod < -0.05
-              ? "↑ Retracting rods (increase power)"
-              : "≈ Neutral"}
+                ? "↑ Retracting rods (increase power)"
+                : "≈ Neutral"}
           </p>
         </div>
 
@@ -121,8 +121,8 @@ export const AIActionDisplay: React.FC<AIActionDisplayProps> = ({
             {action.coolant_flow > 0.05
               ? "⬆ Increasing flow (better cooling)"
               : action.coolant_flow < -0.05
-              ? "⬇ Decreasing flow"
-              : "≈ Normal flow"}
+                ? "⬇ Decreasing flow"
+                : "≈ Normal flow"}
           </p>
         </div>
 

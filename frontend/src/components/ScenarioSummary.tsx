@@ -83,7 +83,7 @@ export const ScenarioSummary: React.FC<ScenarioSummaryProps> = ({
           <div className="rounded-lg bg-white/50 px-3 py-2">
             <p className="text-xs text-gray-600">Total Reward</p>
             <p className={`text-lg font-bold ${(metrics.total_reward ?? 0) > 0 ? "text-green-700" : "text-red-700"}`}>
-              {(metrics.total_reward ?? 0).toFixed(2)}
+              {(metrics.total_reward ?? 0).toFixed(3)}
             </p>
           </div>
 
@@ -91,7 +91,7 @@ export const ScenarioSummary: React.FC<ScenarioSummaryProps> = ({
           <div className="rounded-lg bg-white/50 px-3 py-2">
             <p className="text-xs text-gray-600">Max Fuel Temp</p>
             <p className={`text-lg font-bold ${(fuelTempMax ?? 0) <= 1100 ? "text-green-700" : "text-red-700"}`}>
-              {(fuelTempMax ?? 0).toFixed(1)}K
+              {(fuelTempMax ?? 0).toFixed(3)}K
             </p>
           </div>
 
@@ -99,7 +99,7 @@ export const ScenarioSummary: React.FC<ScenarioSummaryProps> = ({
           <div className="rounded-lg bg-white/50 px-3 py-2">
             <p className="text-xs text-gray-600">Final Fuel Temp</p>
             <p className={`text-lg font-bold ${(fuelTempCurrent ?? 0) <= 1100 ? "text-green-700" : "text-red-700"}`}>
-              {(fuelTempCurrent ?? 0).toFixed(1)}K
+              {(fuelTempCurrent ?? 0).toFixed(3)}K
             </p>
           </div>
         </div>

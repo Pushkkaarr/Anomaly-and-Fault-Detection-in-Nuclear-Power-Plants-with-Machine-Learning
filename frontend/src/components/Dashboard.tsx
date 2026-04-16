@@ -231,7 +231,7 @@ export const Dashboard: React.FC = () => {
                 style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(0,255,136,0.1)" }}
               >
                 <span style={{ color: "rgba(107,143,168,0.6)" }}>t =</span>
-                <span style={{ color: "var(--brand-accent)" }}>{state.time.toFixed(1)}s</span>
+                <span style={{ color: "var(--brand-accent)" }}>{state.time.toFixed(3)}s</span>
                 <span style={{ color: "rgba(107,143,168,0.3)" }}>·</span>
                 <span style={{ color: "rgba(107,143,168,0.6)" }}>step</span>
                 <span style={{ color: "var(--brand-accent)" }}>{store.episode_step}/200</span>
@@ -298,7 +298,7 @@ export const Dashboard: React.FC = () => {
             animationIterationCount: "infinite",
           }}
         >
-          🔥 CRITICAL: Fuel Temperature {state?.fuel_temp.toFixed(0)}K — EXCEEDS 1100K SAFETY LIMIT
+          🔥 CRITICAL: Fuel Temperature {state?.fuel_temp.toFixed(3)}K — EXCEEDS 1100K SAFETY LIMIT
         </div>
       )}
 
@@ -417,7 +417,7 @@ export const Dashboard: React.FC = () => {
                 <div>
                   <div className="flex justify-between text-xs mb-1" style={{ color: "rgba(107,143,168,0.7)" }}>
                     <span>Step {store.episode_step}</span>
-                    <span>{((store.episode_step / 200) * 100).toFixed(0)}%</span>
+                    <span>{((store.episode_step / 200) * 100).toFixed(3)}%</span>
                   </div>
                   <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(0,255,136,0.1)" }}>
                     <div
@@ -432,8 +432,8 @@ export const Dashboard: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { label: "Sim Time", value: `${state.time.toFixed(1)}s`, color: "var(--brand-accent)" },
-                    { label: "Score", value: (store.metrics?.total_reward ?? 0).toFixed(1), color: (store.metrics?.total_reward ?? 0) >= 0 ? "var(--brand-accent)" : "#ff6568" },
+                    { label: "Sim Time", value: `${state.time.toFixed(3)}s`, color: "var(--brand-accent)" },
+                    { label: "Score", value: (store.metrics?.total_reward ?? 0).toFixed(3), color: (store.metrics?.total_reward ?? 0) >= 0 ? "var(--brand-accent)" : "#ff6568" },
                     { label: "Events", value: store.events.length.toString(), color: "#fbbf24" },
                   ].map((item, i) => (
                     <div
@@ -557,7 +557,7 @@ export const Dashboard: React.FC = () => {
                       />
                     </div>
                     <p className="text-xs mt-1 font-mono" style={{ color: "rgba(107,143,168,0.5)" }}>
-                      Δ = {store.last_action.control_rod.toFixed(5)}
+                      Δ = {store.last_action.control_rod.toFixed(3)}
                     </p>
                   </div>
 
@@ -587,7 +587,7 @@ export const Dashboard: React.FC = () => {
                       />
                     </div>
                     <p className="text-xs mt-1 font-mono" style={{ color: "rgba(107,143,168,0.5)" }}>
-                      Δ = {store.last_action.coolant_flow > 0 ? "+" : ""}{store.last_action.coolant_flow.toFixed(5)}
+                      Δ = {store.last_action.coolant_flow > 0 ? "+" : ""}{store.last_action.coolant_flow.toFixed(3)}
                     </p>
                   </div>
                 </div>
@@ -642,7 +642,7 @@ export const Dashboard: React.FC = () => {
                   {[
                     {
                       label: "Fuel Temperature",
-                      value: `${state.fuel_temp.toFixed(1)} K`,
+                      value: `${state.fuel_temp.toFixed(3)} K`,
                       target: "Danger: > 1100K",
                       detail: isCritical ? "CRITICAL — SHUTDOWN RISK" : isWarning ? "Warning zone" : "Normal operating range",
                       pct: Math.min(state.fuel_temp / 1150, 1),
@@ -650,7 +650,7 @@ export const Dashboard: React.FC = () => {
                     },
                     {
                       label: "Reactor Power",
-                      value: `${(state.power * 100).toFixed(1)} %`,
+                      value: `${(state.power * 100).toFixed(3)} %`,
                       target: "Target: 80–120%",
                       detail: state.power < 0.8 ? "Under-producing" : state.power > 1.2 ? "Over-power" : "On target",
                       pct: Math.min(state.power / 1.5, 1),
@@ -658,7 +658,7 @@ export const Dashboard: React.FC = () => {
                     },
                     {
                       label: "Coolant Temperature",
-                      value: `${state.coolant_temp.toFixed(1)} K`,
+                      value: `${state.coolant_temp.toFixed(3)} K`,
                       target: "Safe band: 280–320K",
                       detail: state.coolant_temp > 320 ? "Overheating — check flow" : "Normal",
                       pct: Math.min(state.coolant_temp / 350, 1),
@@ -666,7 +666,7 @@ export const Dashboard: React.FC = () => {
                     },
                     {
                       label: "System Pressure",
-                      value: `${state.pressure.toFixed(2)} bar`,
+                      value: `${state.pressure.toFixed(3)} bar`,
                       target: "Safe: 8–12 bar",
                       detail: state.pressure > 13 ? "High pressure — risk of leak" : state.pressure < 7 ? "Low pressure" : "Normal",
                       pct: Math.min((state.pressure - 5) / 11, 1),
@@ -674,7 +674,7 @@ export const Dashboard: React.FC = () => {
                     },
                     {
                       label: "Coolant Flow",
-                      value: `${(state.coolant_flow_actual ?? 0).toFixed(0)} kg/s`,
+                      value: `${(state.coolant_flow_actual ?? 0).toFixed(3)} kg/s`,
                       target: "Nominal: ~8,000 kg/s",
                       detail: (state.coolant_flow_actual ?? 0) < 4000 ? "⚠️ Low flow (LOFA risk)" : "Adequate flow",
                       pct: Math.min((state.coolant_flow_actual ?? 0) / 12000, 1),
@@ -682,7 +682,7 @@ export const Dashboard: React.FC = () => {
                     },
                     {
                       label: "Power Rate",
-                      value: `${state.power_rate > 0 ? "+" : ""}${state.power_rate.toFixed(4)}/s`,
+                      value: `${state.power_rate > 0 ? "+" : ""}${state.power_rate.toFixed(3)}/s`,
                       target: "Stable: < ±0.02/s",
                       detail: Math.abs(state.power_rate) > 0.05 ? "Rapid power change!" : "Stable rate",
                       pct: Math.min(Math.abs(state.power_rate) / 0.15, 1),
@@ -794,7 +794,7 @@ export const Dashboard: React.FC = () => {
                     <div className="flex items-center justify-between mt-2 text-xs">
                       <span style={{ color: "rgba(107,143,168,0.7)" }}>Confidence</span>
                       <span style={{ color: "#a0d8e8" }}>
-                        {fault.confidence !== undefined ? `${(fault.confidence * 100).toFixed(1)}%` : "N/A"}
+                        {fault.confidence !== undefined ? `${(fault.confidence * 100).toFixed(3)}%` : "N/A"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between mt-1 text-xs">

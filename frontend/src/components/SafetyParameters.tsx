@@ -59,7 +59,7 @@ export const SafetyParameters: React.FC<SafetyParametersProps> = ({
                 Fuel Temperature
               </p>
               <p className="mt-2 text-3xl font-bold text-gray-900">
-                {state.fuel_temp.toFixed(1)}
+                {state.fuel_temp.toFixed(3)}
               </p>
               <p className="text-xs text-gray-500">K (Kelvin)</p>
             </div>
@@ -100,7 +100,7 @@ export const SafetyParameters: React.FC<SafetyParametersProps> = ({
               System Pressure
             </p>
             <p className="mt-2 text-3xl font-bold text-gray-900">
-              {state.pressure.toFixed(1)}
+              {state.pressure.toFixed(3)}
             </p>
             <p className="text-xs text-gray-500">bar</p>
           </div>
@@ -131,7 +131,7 @@ export const SafetyParameters: React.FC<SafetyParametersProps> = ({
               Coolant Temperature
             </p>
             <p className="mt-2 text-3xl font-bold text-gray-900">
-              {state.coolant_temp.toFixed(1)}
+              {state.coolant_temp.toFixed(3)}
             </p>
             <p className="text-xs text-gray-500">K</p>
           </div>
@@ -162,7 +162,7 @@ export const SafetyParameters: React.FC<SafetyParametersProps> = ({
               Reactor Power
             </p>
             <p className="mt-2 text-3xl font-bold text-gray-900">
-              {state.power.toFixed(2)}
+              {state.power.toFixed(3)}
             </p>
             <p className="text-xs text-gray-500">MW</p>
           </div>
@@ -191,7 +191,7 @@ export const SafetyParameters: React.FC<SafetyParametersProps> = ({
             Power Rate of Change
           </p>
           <p className="mt-2 text-2xl font-bold text-gray-900">
-            {state.power_rate > 0 ? "+" : ""}{state.power_rate.toFixed(4)}
+            {state.power_rate > 0 ? "+" : ""}{state.power_rate.toFixed(3)}
           </p>
           <p className="text-xs text-gray-500">MW/s</p>
           <p className="mt-2 text-xs text-gray-600">
@@ -209,7 +209,7 @@ export const SafetyParameters: React.FC<SafetyParametersProps> = ({
             Temperature Rate
           </p>
           <p className="mt-2 text-2xl font-bold text-gray-900">
-            {state.temp_rate > 0 ? "+" : ""}{state.temp_rate.toFixed(4)}
+            {state.temp_rate > 0 ? "+" : ""}{state.temp_rate.toFixed(3)}
           </p>
           <p className="text-xs text-gray-500">K/s</p>
           <p className="mt-2 text-xs text-gray-600">
@@ -227,7 +227,7 @@ export const SafetyParameters: React.FC<SafetyParametersProps> = ({
             Simulation Time
           </p>
           <p className="mt-2 text-2xl font-bold text-gray-900">
-            {state.time.toFixed(1)}s
+            {state.time.toFixed(3)}s
           </p>
           <p className="text-xs text-gray-500">elapsed</p>
           <p className="mt-2 text-xs text-gray-600">

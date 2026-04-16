@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useRef, useEffect } from "react";
 
@@ -82,8 +82,8 @@ export const AnalogGauge: React.FC<AnalogGaugeProps> = ({
     const warnEndAngle = startAngle + totalAngle;
 
     const displayValue = typeof value === "number"
-        ? value >= 10 ? value.toFixed(1) : value.toFixed(2)
-        : "0";
+        ? value.toFixed(3)
+        : "0.000";
 
     return (
         <div className="flex flex-col items-center gap-1">

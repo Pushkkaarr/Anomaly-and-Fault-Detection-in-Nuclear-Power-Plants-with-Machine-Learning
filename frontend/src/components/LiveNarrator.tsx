@@ -41,36 +41,36 @@ function buildNarratorLines(
 
   // === Critical alerts first ===
   if (fuelTemp > 1100) {
-    addLine(`🔥 CRITICAL: Fuel temp ${fuelTemp.toFixed(0)}K exceeds 1100K safety limit — core damage risk!`, "critical");
+    addLine(`🔥 CRITICAL: Fuel temp ${fuelTemp.toFixed(3)}K exceeds 1100K safety limit — core damage risk!`, "critical");
   } else if (fuelTemp > 1050) {
-    addLine(`⚠️ Alert: Fuel temp ${fuelTemp.toFixed(0)}K approaching safety boundary at 1100K`, "warning");
+    addLine(`⚠️ Alert: Fuel temp ${fuelTemp.toFixed(3)}K approaching safety boundary at 1100K`, "warning");
   }
 
   if (pressure > 13.5) {
-    addLine(`💨 High pressure: ${pressure.toFixed(2)} bar — primary coolant loop overpressure`, "critical");
+    addLine(`💨 High pressure: ${pressure.toFixed(3)} bar — primary coolant loop overpressure`, "critical");
   } else if (pressure > 12.5) {
-    addLine(`💨 Pressure elevated: ${pressure.toFixed(2)} bar (limit: 13.5 bar)`, "warning");
+    addLine(`💨 Pressure elevated: ${pressure.toFixed(3)} bar (limit: 13.5 bar)`, "warning");
   } else if (pressure < 7) {
-    addLine(`💨 Low pressure: ${pressure.toFixed(2)} bar — possible coolant leak`, "warning");
+    addLine(`💨 Low pressure: ${pressure.toFixed(3)} bar — possible coolant leak`, "warning");
   }
 
   if (power > 130) {
-    addLine(`⚡ Power surge: ${power.toFixed(0)}% — far above nominal 100%`, "critical");
+    addLine(`⚡ Power surge: ${power.toFixed(3)}% — far above nominal 100%`, "critical");
   } else if (power < 70) {
-    addLine(`⚡ Power low: ${power.toFixed(0)}% — reactor under-producing`, "warning");
+    addLine(`⚡ Power low: ${power.toFixed(3)}% — reactor under-producing`, "warning");
   }
 
   // === Scenario-specific narration ===
   if (scenario === "lofa" && coolantTemp > 320) {
     addLine(
-      `🌊 LOFA Active: Coolant temp ${coolantTemp.toFixed(0)}K — reduced flow starving heat removal`,
+      `🌊 LOFA Active: Coolant temp ${coolantTemp.toFixed(3)}K — reduced flow starving heat removal`,
       "warning"
     );
   }
 
   if (scenario === "power_ramp" && Math.abs(state.power_rate) > 0.06) {
     addLine(
-      `📈 Ramp transient: Power changing at ${state.power_rate.toFixed(4)}/s — AI tracking demand`,
+      `📈 Ramp transient: Power changing at ${state.power_rate.toFixed(3)}/s — AI tracking demand`,
       "info"
     );
   }
@@ -92,14 +92,14 @@ function buildNarratorLines(
       const rodAction = rod > 0
         ? `inserting rods (deepening absorption) to reduce reactivity`
         : `withdrawing rods to increase neutron flux and power`;
-      addLine(`🤖 AI → ${rodAction} [Δ${rod.toFixed(4)}]`, "action");
+      addLine(`🤖 AI → ${rodAction} [Δ${rod.toFixed(3)}]`, "action");
     }
 
     if (Math.abs(flow) > 0.01) {
       const flowAction = flow > 0
         ? `boosting coolant flow to increase heat removal`
         : `reducing coolant flow to raise coolant temperature`;
-      addLine(`🤖 AI → ${flowAction} [${flow > 0 ? "+" : ""}${flow.toFixed(4)}]`, "action");
+      addLine(`🤖 AI → ${flowAction} [${flow > 0 ? "+" : ""}${flow.toFixed(3)}]`, "action");
     }
 
     if (Math.abs(rod) <= 0.01 && Math.abs(flow) <= 0.01) {
@@ -114,7 +114,7 @@ function buildNarratorLines(
     const allGood = fuelTemp < 960 && power >= 80 && power <= 120 && pressure >= 8 && pressure <= 12;
     if (allGood) {
       addLine(
-        `✅ Step ${step}: All parameters nominal — Fuel ${fuelTemp.toFixed(0)}K, Power ${power.toFixed(0)}%, P ${pressure.toFixed(1)}bar`,
+        `✅ Step ${step}: All parameters nominal — Fuel ${fuelTemp.toFixed(3)}K, Power ${power.toFixed(3)}%, P ${pressure.toFixed(3)}bar`,
         "success"
       );
     }
@@ -124,9 +124,9 @@ function buildNarratorLines(
   if (prevState) {
     const tempDelta = fuelTemp - prevState.fuel_temp;
     if (tempDelta > 15) {
-      addLine(`🌡️ Rapid temp rise: +${tempDelta.toFixed(1)}K this step — immediate intervention needed`, "warning");
+      addLine(`🌡️ Rapid temp rise: +${tempDelta.toFixed(3)}K this step — immediate intervention needed`, "warning");
     } else if (tempDelta < -15) {
-      addLine(`🌡️ Temperature dropping: ${tempDelta.toFixed(1)}K this step — cooling effective`, "success");
+      addLine(`🌡️ Temperature dropping: ${tempDelta.toFixed(3)}K this step — cooling effective`, "success");
     }
   }
 

@@ -56,12 +56,12 @@ function buildNarrative(
     );
     if (peakExceeded) {
       story.push(
-        `⚠️ Despite intervention, fuel temperature peaked at ${peakTemp.toFixed(0)}K — exceeding the 1100K safety threshold. ` +
+        `⚠️ Despite intervention, fuel temperature peaked at ${peakTemp.toFixed(3)}K — exceeding the 1100K safety threshold. ` +
           `This indicates the AI did not respond fast enough or aggressively enough in the early phase of the transient.`
       );
     } else {
       story.push(
-        `Fuel temperature was successfully capped below the 1100K safety limit, peaking at ${peakTemp.toFixed(0)}K. ` +
+        `Fuel temperature was successfully capped below the 1100K safety limit, peaking at ${peakTemp.toFixed(3)}K. ` +
           `The AI's rod insertion strategy was timely enough to prevent core damage.`
       );
     }
@@ -71,7 +71,7 @@ function buildNarrative(
         `The AI managed rod withdrawal rate to follow the demand signal while monitoring fuel temperature and pressure closely.`
     );
     story.push(
-      `Peak fuel temperature during the ramp was ${peakTemp.toFixed(0)}K. ` +
+      `Peak fuel temperature during the ramp was ${peakTemp.toFixed(3)}K. ` +
         (peakTemp > 1000
           ? "This was an aggressive ramp — the AI had to balance speed of response against thermal safety margins."
           : "The controlled ramp remained within safe thermal limits throughout the episode.")
@@ -95,7 +95,7 @@ function buildNarrative(
     story.push(
       `The AI's ${success ? "conservative" : "aggressive"} response strategy resulted in ${
         success ? "smooth" : "oscillatory"
-      } control behavior. Average pressure held at ${metrics.avg_pressure.toFixed(2)} bar.`
+      } control behavior. Average pressure held at ${metrics.avg_pressure.toFixed(3)} bar.`
     );
   } else if (scenario === "normal") {
     story.push(
@@ -107,12 +107,12 @@ function buildNarrative(
   // Reward interpretation
   if (success) {
     story.push(
-      `Total mission score: ${metrics.total_reward.toFixed(1)} points. A positive score indicates successful stabilization — the AI earned ` +
+      `Total mission score: ${metrics.total_reward.toFixed(3)} points. A positive score indicates successful stabilization — the AI earned ` +
         `reward for keeping all parameters within bounds across ${metrics.episode_steps} control steps.`
     );
   } else {
     story.push(
-      `Total mission score: ${metrics.total_reward.toFixed(1)} points. A negative score means the AI incurred penalties ` +
+      `Total mission score: ${metrics.total_reward.toFixed(3)} points. A negative score means the AI incurred penalties ` +
         `for parameter violations — either from thermal excursions, pressure breaches, or excessive power swings.`
     );
   }
@@ -121,19 +121,19 @@ function buildNarrative(
   const crises: Array<{ label: string; value: string; color: string; icon: string }> = [
     {
       label: "Peak Fuel Temp",
-      value: `${peakTemp.toFixed(0)} K`,
+      value: `${peakTemp.toFixed(3)} K`,
       color: peakExceeded ? "#ff3b3b" : peakWarning ? "#fbbf24" : "#00ff88",
       icon: peakExceeded ? "🔥" : peakWarning ? "⚠️" : "✓",
     },
     {
       label: "Max Coolant Temp",
-      value: `${metrics.max_coolant_temp.toFixed(0)} K`,
+      value: `${metrics.max_coolant_temp.toFixed(3)} K`,
       color: metrics.max_coolant_temp > 320 ? "#fbbf24" : "#9ca3af",
       icon: metrics.max_coolant_temp > 320 ? "⚠️" : "✓",
     },
     {
       label: "Avg Pressure",
-      value: `${metrics.avg_pressure.toFixed(2)} bar`,
+      value: `${metrics.avg_pressure.toFixed(3)} bar`,
       color:
         metrics.avg_pressure < 8 || metrics.avg_pressure > 13 ? "#fbbf24" : "#00ff88",
       icon: metrics.avg_pressure < 8 || metrics.avg_pressure > 13 ? "⚠️" : "✓",
@@ -152,7 +152,7 @@ function buildNarrative(
     },
     {
       label: "Mission Score",
-      value: metrics.total_reward.toFixed(1),
+      value: metrics.total_reward.toFixed(3),
       color: success ? "#00ff88" : partialSuccess ? "#fbbf24" : "#ff3b3b",
       icon: success ? "🏆" : partialSuccess ? "📈" : "❌",
     },
@@ -164,17 +164,17 @@ function buildNarrative(
 
   const from = firstState
     ? {
-        fuel_temp: `${firstState.fuel_temp.toFixed(0)} K`,
-        power: `${(firstState.power * 100).toFixed(1)}%`,
-        pressure: `${firstState.pressure.toFixed(2)} bar`,
+        fuel_temp: `${firstState.fuel_temp.toFixed(3)} K`,
+        power: `${(firstState.power * 100).toFixed(3)}%`,
+        pressure: `${firstState.pressure.toFixed(3)} bar`,
       }
     : { fuel_temp: "—", power: "—", pressure: "—" };
 
   const to = lastState
     ? {
-        fuel_temp: `${lastState.fuel_temp.toFixed(0)} K`,
-        power: `${(lastState.power * 100).toFixed(1)}%`,
-        pressure: `${lastState.pressure.toFixed(2)} bar`,
+        fuel_temp: `${lastState.fuel_temp.toFixed(3)} K`,
+        power: `${(lastState.power * 100).toFixed(3)}%`,
+        pressure: `${lastState.pressure.toFixed(3)} bar`,
       }
     : { fuel_temp: "—", power: "—", pressure: "—" };
 

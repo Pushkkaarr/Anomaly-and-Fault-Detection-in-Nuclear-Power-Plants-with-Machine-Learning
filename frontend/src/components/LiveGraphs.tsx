@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useMemo } from "react";
 import {
@@ -33,9 +33,9 @@ const MiniTooltip = ({ active, payload, label, unit }: any) => {
             fontSize: 10,
             fontFamily: MONO,
         }}>
-            <p style={{ color: "rgba(0,255,136,0.5)", margin: 0 }}>t={Number(label).toFixed(1)}s</p>
+            <p style={{ color: "rgba(0,255,136,0.5)", margin: 0 }}>t={Number(label).toFixed(3)}s</p>
             <p style={{ color: payload[0].color, margin: 0, fontWeight: "bold" }}>
-                {Number(payload[0].value).toFixed(2)}{unit}
+                {Number(payload[0].value).toFixed(3)}{unit}
             </p>
         </div>
     );
@@ -74,7 +74,7 @@ const MetricChart: React.FC<MetricChartProps> = ({
                     {label}
                 </p>
                 <span style={{ fontSize: "0.72rem", color, fontFamily: MONO, fontWeight: 700, textShadow: `0 0 8px ${color}60` }}>
-                    {latest !== undefined ? `${latest.toFixed(latest > 100 ? 1 : 3)}${unit}` : "—"}
+                    {latest !== undefined ? `${latest.toFixed(3)}${unit}` : "—"}
                 </span>
             </div>
             <ResponsiveContainer width="100%" height={height}>
@@ -84,7 +84,7 @@ const MetricChart: React.FC<MetricChartProps> = ({
                         dataKey="t"
                         tick={AXIS_TICK}
                         strokeWidth={0}
-                        tickFormatter={v => `${Number(v).toFixed(0)}s`}
+                        tickFormatter={v => `${Number(v).toFixed(3)}s`}
                         interval="preserveStartEnd"
                         minTickGap={30}
                     />
@@ -92,10 +92,7 @@ const MetricChart: React.FC<MetricChartProps> = ({
                         domain={domain}
                         tick={AXIS_TICK}
                         strokeWidth={0}
-                        tickFormatter={v => {
-                            const n = Number(v);
-                            return n > 999 ? `${(n / 1000).toFixed(2)}k` : n.toFixed(n > 10 ? 1 : 3);
-                        }}
+                        tickFormatter={v => Number(v).toFixed(3)}
                         width={38}
                     />
                     <Tooltip content={<MiniTooltip unit={unit} />} />

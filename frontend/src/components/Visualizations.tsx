@@ -74,7 +74,7 @@ export const Gauge: React.FC<GaugeProps> = ({
           className="text-sm font-bold fill-gray-900"
           dominantBaseline="middle"
         >
-          {value.toFixed(0)}
+          {value.toFixed(3)}
         </text>
         <text
           x="60"
@@ -179,7 +179,7 @@ export const ControlRods: React.FC<ControlRodsProps> = ({ power, precursors }) =
           />
         </div>
         <div className="mt-2 text-sm font-bold text-gray-900">
-          {power.toFixed(1)} MW
+          {power.toFixed(3)} MW
         </div>
       </div>
 
@@ -194,7 +194,7 @@ export const ControlRods: React.FC<ControlRodsProps> = ({ power, precursors }) =
           />
         </div>
         <div className="mt-2 text-sm font-bold text-gray-900">
-          {precursors.toFixed(2)}%
+          {precursors.toFixed(3)}%
         </div>
       </div>
     </div>
@@ -233,7 +233,7 @@ export const TemperatureHeatmap: React.FC<TemperatureHeatmapProps> = ({
       <div>
         <div className="mb-1 flex justify-between text-xs font-semibold text-gray-600">
           <span>Fuel Temperature</span>
-          <span>{fuelTemp.toFixed(0)}K</span>
+          <span>{fuelTemp.toFixed(3)}K</span>
         </div>
         <div className="h-6 overflow-hidden rounded-lg bg-gray-100">
           <div
@@ -246,7 +246,7 @@ export const TemperatureHeatmap: React.FC<TemperatureHeatmapProps> = ({
       <div>
         <div className="mb-1 flex justify-between text-xs font-semibold text-gray-600">
           <span>Coolant Temperature</span>
-          <span>{coolantTemp.toFixed(0)}K</span>
+          <span>{coolantTemp.toFixed(3)}K</span>
         </div>
         <div className="h-6 overflow-hidden rounded-lg bg-gray-100">
           <div
@@ -259,7 +259,7 @@ export const TemperatureHeatmap: React.FC<TemperatureHeatmapProps> = ({
       <div>
         <div className="mb-1 flex justify-between text-xs font-semibold text-gray-600">
           <span>System Pressure</span>
-          <span>{pressure.toFixed(1)} bar</span>
+          <span>{pressure.toFixed(3)} bar</span>
         </div>
         <div className="h-6 overflow-hidden rounded-lg bg-gray-100">
           <div
@@ -310,7 +310,7 @@ export const LiveGraph: React.FC<{
           <CardTitle className="text-base">{title}</CardTitle>
           <div className="text-right">
             <div className="text-2xl font-bold" style={{ color }}>
-              {latestValue.toFixed(1)}
+              {latestValue.toFixed(3)}
             </div>
             <div className="text-xs text-gray-500">{yUnit}</div>
           </div>
@@ -321,7 +321,7 @@ export const LiveGraph: React.FC<{
           <div className="flex justify-between text-xs text-gray-500">
             <span>{yLabel}</span>
             <div>
-              Min: {minValue.toFixed(1)} | Max: {maxValue.toFixed(1)}
+              Min: {minValue.toFixed(3)} | Max: {maxValue.toFixed(3)}
             </div>
           </div>
           <div className="h-24 rounded border border-gray-200 bg-gray-50 p-2">
