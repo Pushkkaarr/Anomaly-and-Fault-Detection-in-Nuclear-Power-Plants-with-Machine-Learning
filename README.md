@@ -3,7 +3,6 @@
 
 A comprehensive AI-powered nuclear reactor control and monitoring system using Deep Reinforcement Learning (Soft Actor-Critic) models.
 
----
 
 ## 🎯 Project Overview
 
@@ -18,7 +17,6 @@ This project demonstrates an advanced control system for nuclear reactors using 
 
 ---
 
----
 
 ## 🚀 Quick Start
 
@@ -54,6 +52,7 @@ npm run dev
 ---
 
 ## 📊 Dashboard Features
+<img width="1622" height="2347" alt="lofa full" src="https://github.com/user-attachments/assets/86f38d71-c3a4-4731-ad2d-861ab6f19b4e" />
 
 ### Left Panel - Reactor Visualization
 - **4 Circular Gauges**: Power, Fuel Temperature, Coolant Temperature, Pressure
@@ -72,6 +71,8 @@ npm run dev
 - **Metrics Summary**: Statistics (reward, steps, temperature peaks, etc.)
 - **Score Cards**: Key performance indicators
 - **Real-time Graphs**: Power, temperatures, and pressure trends
+
+<img width="1636" height="2210" alt="completed dashboard" src="https://github.com/user-attachments/assets/a505e84e-b016-4593-8461-08a59c242ed1" />
 
 ---
 
@@ -117,6 +118,7 @@ POST /api/simulation/stop      → Stop & get summary
 - **Performance**: Excellent control stability
 - **Use Case**: Production control
 - **Location**: `python/SAC_enhanced_model/nuclear_reactor_sac/models/enhanced/best_model.pth`
+<img width="2882" height="2147" alt="best_episode" src="https://github.com/user-attachments/assets/e6e17aa2-4491-4b9d-bb41-e4af425efc64" />
 
 ### Optimized SAC Agent
 - **Training Steps**: 150,000
